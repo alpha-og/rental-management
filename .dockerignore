@@ -1,0 +1,15 @@
+**/node_modules
+**/*.md
+**/dist
+**/.next
+**/out
+**/build
+.git
+.gitignore
+.env
+.eslintcache
+**/.DS_Store
+**/next-env.d.ts
+**/Dockerfile*
+**/docker-compose*
+**/compose*

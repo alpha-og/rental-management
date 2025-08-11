@@ -1,0 +1,52 @@
+{
+    "name": "monorepo",
+    "version": "0.1.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "dev": "pnpm run --parallel start:dev",
+        "dev:web": "pnpm --filter @monorepo/client start:dev",
+        "dev:server": "pnpm --filter @monorepo/server start:dev",
+        "build:web": "pnpm --filter @monorepo/client build",
+        "build:server": "pnpm --filter @monorepo/server build",
+        "start:web": "pnpm --filter @monorepo/client start",
+        "test:server": "pnpm --filter @monorepo/server test",
+        "docker:dev": "docker compose --profile dev up",
+        "docker:dev-web": "docker compose --profile dev up --no-deps dev-client",
+        "docker:dev-server": "docker compose --profile dev up dev-server dev-db",
+        "docker:prod": "docker compose --profile prod up --build",
+        "docker:clean": "docker image prune -f",
+        "lint": "eslint --cache --fix .",
+        "lint:server": "pnpm --filter @monorepo/server lint",
+        "format": "prettier --write --ignore-unknown .",
+        "prepare": "husky install"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "eslint --cache --fix",
+            "prettier --write --ignore-unknown"
+        ]
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748",
+    "devDependencies": {
+        "@eslint/eslintrc": "^3.3.1",
+        "@eslint/js": "^9.31.0",
+        "@types/node": "^24.0.14",
+        "eslint": "^9.31.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-prettier": "^5.5.1",
+        "globals": "^16.3.0",
+        "husky": "^8.0.0",
+        "lint-staged": "^16.1.2",
+        "prettier": "^3.6.2",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.37.0",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "zod": "^4.0.5"
+    }
+}

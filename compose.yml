@@ -1,0 +1,109 @@
+services:
+  # development containers
+  dev-client:
+    profiles:
+      - dev
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile.dev
+    # image: monorepo-client:dev
+    env_file:
+      - ./apps/client/.env.dev
+    ports:
+      - "${DEV_CLIENT_WEB_PORT}:${DEV_CLIENT_WEB_PORT}"
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/apps/client/node_modules
+
+    networks:
+      - dev-network
+    depends_on:
+      - dev-server
+  dev-server:
+    profiles:
+      - dev
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile.dev
+    # image: monorepo-server:dev
+    env_file:
+      - ./apps/server/.env.dev
+    ports:
+      - "${DEV_SERVER_PORT}:${DEV_SERVER_PORT}"
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/apps/server/node_modules
+    networks:
+      - dev-network
+    depends_on:
+      - dev-db
+  dev-db:
+    profiles:
+      - dev
+    image: postgres:alpine
+    env_file:
+      - ./apps/server/.env.dev
+    restart: unless-stopped
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  # production containers
+
+  prod-client:
+    profiles:
+      - prod
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile.prod
+    env_file:
+      - ./apps/client/.env.prod
+    ports:
+      - "${PROD_CLIENT_WEB_PORT}:${PROD_CLIENT_WEB_PORT}"
+    networks:
+      - prod-network
+    depends_on:
+      - prod-server
+  prod-server:
+    profiles:
+      - prod
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile.prod
+    env_file:
+      - ./apps/server/.env.prod
+    ports:
+      - "${PROD_SERVER_PORT}:${PROD_SERVER_PORT}"
+    networks:
+      - prod-network
+    depends_on:
+      - prod-db
+  prod-db:
+    profiles:
+      - prod
+    image: postgres:alpine
+    env_file:
+      - ./apps/server/.env.prod
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    networks:
+      - prod-network
+
+volumes:
+  dev-db-data:
+  test-db-data:
+  prod-db-data:
+
+networks:
+  dev-network:
+    driver: bridge
+  test-network:
+    driver: bridge
+  prod-network:
+    driver: bridge
+

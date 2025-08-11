@@ -1,0 +1,22 @@
+FROM node:24-alpine AS base
+
+RUN apk add --no-cache libc6-compat
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable pnpm
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs 
+
+WORKDIR /app
+
+COPY --chown=nestjs:nodejs package.json pnpm-lock.yaml ./pnpm-workspace.yaml .
+COPY --chown=nestjs:nodejs ./apps/server/package.json ./apps/server/package.json
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --chown=nestjs:nodejs . .
+
+USER nestjs
+CMD ["pnpm", "dev:server"]

@@ -1,0 +1,23 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "allowImportingTsExtensions": false,
+        "emitDeclarationOnly": false,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "strictBindCallApply": false
+    },
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "test"
+    ]
+}

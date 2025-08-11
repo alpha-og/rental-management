@@ -1,0 +1,41 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "removeComments": true,
+        "declarationMap": true,
+        "emitDeclarationOnly": true,
+        "importHelpers": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ESNext",
+        "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "strict": true,
+        "allowJs": false,
+        "strictNullChecks": true,
+        "noImplicitAny": false,
+        "forceConsistentCasingInFileNames": true,
+        "incremental": true,
+        "composite": true,
+        "customConditions": [
+            "development"
+        ],
+        "paths": {
+            "@server/*": [
+                "./apps/server/src/*"
+            ],
+            "@client/*": [
+                "./apps/client/src/*"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

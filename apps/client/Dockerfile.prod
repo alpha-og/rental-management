@@ -1,0 +1,33 @@
+FROM node:24-alpine AS base
+
+FROM base AS workspace
+RUN apk add --no-cache libc6-compat
+RUN corepack enable pnpm
+
+FROM workspace AS dependencies  
+WORKDIR /app
+COPY . .
+RUN --mount=type=cache,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+FROM workspace AS builder
+WORKDIR /app
+COPY . .
+COPY --from=dependencies /app/node_modules ./node_modules
+RUN pnpm build:web
+CMD ["pnpm", "start:web"]
+
+# FROM base AS runner 
+# WORKDIR /app
+# RUN addgroup --system --gid 1001 nodejs
+# RUN adduser --system --uid 1001 nextjs
+# # COPY --from=builder /app/apps/client/public ./public
+# # Automatically leverage output traces to reduce image size
+# # https://nextjs.org/docs/advanced-features/output-file-tracing
+# COPY --from=builder --chown=nextjs:nodejs /app/apps/client/.next/standalone ./
+# COPY --from=builder --chown=nextjs:nodejs /app/apps/client/.next/static ./.next/static
+# USER nextjs
+#
+# CMD ["node", "apps/client/server.js"]
+
+

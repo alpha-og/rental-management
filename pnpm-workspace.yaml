@@ -1,0 +1,16 @@
+packages:
+  - packages/*
+  - apps/*
+
+injectWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+syncInjectedDepsAfterScripts:
+  - build
