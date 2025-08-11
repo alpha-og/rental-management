@@ -1,37 +1,16 @@
+import { QuotationTable } from "./quotation.table";
+import { Product } from "../products/products.model";
+import { Rate } from "../rates/rate.model";
 import {
-    AllowNull,
     BelongsTo,
     Column,
     DataType,
-    Default,
     ForeignKey,
     HasOne,
-    Model,
-    PrimaryKey,
-    Table,
+    AllowNull,
 } from "sequelize-typescript";
-import { Product } from "../products/products.model";
-import { Rate } from "../rates/rate.model";
 
-interface QuotationAttributes {
-    id: string;
-    productId: string;
-    rateId: string;
-    quantity: number;
-}
-
-type QuotationCreationAttributes = Omit<QuotationAttributes, "id">;
-
-@Table({ tableName: "quotations", timestamps: true })
-export class Quotation extends Model<
-    QuotationAttributes,
-    QuotationCreationAttributes
-> {
-    @PrimaryKey
-    @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
-    declare id: string;
-
+export class Quotation extends QuotationTable {
     @ForeignKey(() => Product)
     @AllowNull(false)
     @Column(DataType.UUID)
@@ -40,15 +19,11 @@ export class Quotation extends Model<
     @BelongsTo(() => Product)
     declare product?: Product;
 
-    // @ForeignKey(() => Rate)
+    @ForeignKey(() => Rate)
     @AllowNull(false)
     @Column(DataType.UUID)
     declare rateId: string;
 
     @HasOne(() => Rate)
     declare rate?: Rate;
-
-    @AllowNull(false)
-    @Column(DataType.INTEGER)
-    declare quantity: number;
 }

@@ -1,35 +1,14 @@
+import { AttachmentTable } from "./attachments.table";
+import { Product } from "../products/products.model";
 import {
     AllowNull,
     BelongsTo,
     Column,
     DataType,
-    Default,
     ForeignKey,
-    Model,
-    PrimaryKey,
-    Table,
 } from "sequelize-typescript";
-import { Product } from "../products/products.model";
 
-interface AttachmentAttributes {
-    id: string;
-    productId: string;
-    url: string;
-    mimeType?: string;
-}
-
-type AttachmentCreationAttributes = Omit<AttachmentAttributes, "id">;
-
-@Table({ tableName: "attachments", timestamps: true })
-export class Attachment extends Model<
-    AttachmentAttributes,
-    AttachmentCreationAttributes
-> {
-    @PrimaryKey
-    @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
-    declare id: string;
-
+export class Attachment extends AttachmentTable {
     @ForeignKey(() => Product)
     @AllowNull(false)
     @Column(DataType.UUID)
@@ -37,8 +16,4 @@ export class Attachment extends Model<
 
     @BelongsTo(() => Product)
     declare product?: Product;
-
-    @AllowNull(false)
-    @Column(DataType.STRING)
-    declare url: string;
 }
