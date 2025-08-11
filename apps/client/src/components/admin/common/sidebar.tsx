@@ -12,6 +12,8 @@ import {
     ChevronLeft,
     LogOut,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@client/lib/utils";
 import { useAuth } from "@client/contexts/AuthContext";
 
@@ -31,23 +33,41 @@ interface SidebarProps {
 }
 
 const sidebarItems: SidebarItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: <Home className="h-5 w-5" /> },
-    { id: "rental", label: "Rental", icon: <Package className="h-5 w-5" /> },
-    { id: "order", label: "Order", icon: <ShoppingCart className="h-5 w-5" /> },
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: <Home className="h-5 w-5" />,
+        href: "/admin/dashboard",
+    },
+    {
+        id: "rental",
+        label: "Rental",
+        icon: <Package className="h-5 w-5" />,
+        href: "/admin/rental",
+    },
+    {
+        id: "order",
+        label: "Order",
+        icon: <ShoppingCart className="h-5 w-5" />,
+        href: "/admin/order",
+    },
     {
         id: "products",
         label: "Products",
         icon: <Package className="h-5 w-5" />,
+        href: "/admin/products",
     },
     {
         id: "reporting",
         label: "Reporting",
         icon: <BarChart3 className="h-5 w-5" />,
+        href: "/admin/reporting",
     },
     {
         id: "settings",
         label: "Settings",
         icon: <Settings className="h-5 w-5" />,
+        href: "/admin/settings",
     },
 ];
 
@@ -63,28 +83,51 @@ const SidebarItemComponent: React.FC<SidebarItemComponentProps> = ({
     isActive,
     isCollapsed,
     onClick,
-}) => (
-    <button
-        onClick={onClick}
-        className={cn(
-            "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-            "hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-            isActive
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "text-gray-700 hover:text-gray-900",
-            isCollapsed && "justify-center px-2",
-        )}
-        title={isCollapsed ? item.label : undefined}
-    >
-        <span className={cn("flex-shrink-0", isActive && "text-white")}>
-            {item.icon}
-        </span>
-        {!isCollapsed && <span className="truncate">{item.label}</span>}
-    </button>
-);
+}) => {
+    const content = (
+        <>
+            <span className={cn("flex-shrink-0", isActive && "text-white")}>
+                {item.icon}
+            </span>
+            {!isCollapsed && <span className="truncate">{item.label}</span>}
+        </>
+    );
+
+    const className = cn(
+        "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+        "hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+        isActive
+            ? "bg-blue-600 text-white hover:bg-blue-700"
+            : "text-gray-700 hover:text-gray-900",
+        isCollapsed && "justify-center px-2",
+    );
+
+    if (item.href) {
+        return (
+            <Link
+                href={item.href}
+                className={className}
+                title={isCollapsed ? item.label : undefined}
+                onClick={onClick}
+            >
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <button
+            onClick={onClick}
+            className={className}
+            title={isCollapsed ? item.label : undefined}
+        >
+            {content}
+        </button>
+    );
+};
 
 const Sidebar: React.FC<SidebarProps> = ({
-    activeTab = "dashboard",
+    activeTab,
     onTabChange,
     className,
     isMobileOpen: externalMobileOpen,
@@ -94,6 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const [internalMobileOpen, setInternalMobileOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const { logout, user } = useAuth();
+    const pathname = usePathname();
 
     // Use external mobile state if provided, otherwise use internal state
     const isMobileOpen =
@@ -147,6 +191,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             setIsMobileOpen(false);
         }
     };
+
+    // Determine active tab based on current pathname
+    const getActiveTab = () => {
+        if (pathname?.includes("/admin/dashboard")) return "dashboard";
+        if (pathname?.includes("/admin/rental")) return "rental";
+        if (pathname?.includes("/admin/order")) return "order";
+        if (pathname?.includes("/admin/products")) return "products";
+        if (pathname?.includes("/admin/reporting")) return "reporting";
+        if (pathname?.includes("/admin/settings")) return "settings";
+        return activeTab || "dashboard";
+    };
+
+    const currentActiveTab = getActiveTab();
 
     const sidebarContent = (
         <div className="h-full flex flex-col">
@@ -205,7 +262,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <SidebarItemComponent
                         key={item.id}
                         item={item}
-                        isActive={activeTab === item.id}
+                        isActive={currentActiveTab === item.id}
                         isCollapsed={isCollapsed && !isMobile}
                         onClick={() => handleItemClick(item.id)}
                     />
