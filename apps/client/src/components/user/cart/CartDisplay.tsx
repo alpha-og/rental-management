@@ -63,10 +63,12 @@ const CartDisplay = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Your Shopping Cart</h1>
+            <h1 className="text-2xl font-bold mb-4 text-slate-900">
+                Your Shopping Cart
+            </h1>
 
             {cartItems.length === 0 ? (
-                <p>Your cart is empty.</p>
+                <p className="text-slate-600">Your cart is empty.</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {/* Cart Items List */}
@@ -74,17 +76,17 @@ const CartDisplay = () => {
                         {cartItems.map((item) => (
                             <div
                                 key={item.id}
-                                className="flex items-center justify-between border-b py-4"
+                                className="flex items-center justify-between border-b border-slate-200 py-4"
                             >
                                 <div className="flex items-center">
-                                    <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md mr-4 text-gray-500 text-xs text-center">
+                                    <div className="w-20 h-20 bg-slate-100 flex items-center justify-center rounded-md mr-4 text-slate-500 text-xs text-center">
                                         Image Placeholder
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-semibold">
+                                        <h2 className="text-lg font-semibold text-slate-800">
                                             {item.name}
                                         </h2>
-                                        <p className="text-gray-600">
+                                        <p className="text-slate-600">
                                             Price: ${item.price.toFixed(2)}
                                         </p>
                                         <div className="flex items-center mt-2">
@@ -95,11 +97,11 @@ const CartDisplay = () => {
                                                         -1,
                                                     )
                                                 }
-                                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-l-md hover:bg-gray-300"
+                                                className="bg-slate-100 text-slate-700 px-3 py-1 rounded-l-md hover:bg-slate-200 transition-colors"
                                             >
                                                 -
                                             </button>
-                                            <span className="px-4 py-1 border-t border-b">
+                                            <span className="px-4 py-1 border-t border-b border-slate-200 bg-white">
                                                 {item.quantity}
                                             </span>
                                             <button
@@ -109,7 +111,7 @@ const CartDisplay = () => {
                                                         1,
                                                     )
                                                 }
-                                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-r-md hover:bg-gray-300"
+                                                className="bg-slate-100 text-slate-700 px-3 py-1 rounded-r-md hover:bg-slate-200 transition-colors"
                                             >
                                                 +
                                             </button>
@@ -117,14 +119,14 @@ const CartDisplay = () => {
                                                 onClick={() =>
                                                     handleRemoveItem(item.id)
                                                 }
-                                                className="ml-4 text-red-500 hover:text-red-700"
+                                                className="ml-4 text-red-500 hover:text-red-700 transition-colors"
                                             >
                                                 Remove
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-lg font-semibold">
+                                <div className="text-lg font-semibold text-slate-900">
                                     ${(item.price * item.quantity).toFixed(2)}
                                 </div>
                             </div>
@@ -133,15 +135,15 @@ const CartDisplay = () => {
                     {/* Spacer Column */}
                     <div className="md:col-span-1"></div>
                     {/* Order Summary */}
-                    <div className="md:col-span-1 bg-gray-50 p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-bold mb-4">
+                    <div className="md:col-span-1 bg-slate-50 p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h2 className="text-xl font-bold mb-4 text-slate-900">
                             Order Summary
                         </h2>
-                        <div className="flex justify-between mb-2">
+                        <div className="flex justify-between mb-2 text-slate-700">
                             <span>Subtotal:</span>
                             <span>${subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between mb-2">
+                        <div className="flex justify-between mb-2 text-slate-700">
                             <span>Tax (8%):</span>
                             <span>${tax.toFixed(2)}</span>
                         </div>
@@ -151,21 +153,21 @@ const CartDisplay = () => {
                                 <span>-${discount.toFixed(2)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
+                        <div className="flex justify-between font-bold text-lg border-t border-slate-200 pt-2 mt-2 text-slate-900">
                             <span>Total:</span>
                             <span>${total.toFixed(2)}</span>
                         </div>
 
                         {/* Coupon Code Section */}
                         <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-2">
+                            <h3 className="text-lg font-semibold mb-2 text-slate-800">
                                 Coupon Code
                             </h3>
                             <div className="flex">
                                 <input
                                     type="text"
                                     placeholder="Enter coupon code"
-                                    className="flex-grow border rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-grow border border-slate-200 rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
                                     value={couponCode}
                                     onChange={(e) =>
                                         setCouponCode(e.target.value)
@@ -173,14 +175,14 @@ const CartDisplay = () => {
                                 />
                                 <button
                                     onClick={handleApplyCoupon}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600"
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 transition-colors"
                                 >
                                     Apply
                                 </button>
                             </div>
                         </div>
 
-                        <button className="mt-6 w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 text-lg font-semibold">
+                        <button className="mt-6 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-md hover:from-indigo-700 hover:to-purple-700 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md">
                             Proceed to Checkout
                         </button>
                     </div>

@@ -16,13 +16,15 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
-                <span className="text-gray-500">Product {product.id}</span>
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="h-48 bg-slate-100 rounded-lg mb-4 flex items-center justify-center">
+                <span className="text-slate-500">Product {product.id}</span>
             </div>
-            <h4 className="font-semibold text-gray-800 mb-2">{product.name}</h4>
+            <h4 className="font-semibold text-slate-800 mb-2">
+                {product.name}
+            </h4>
             <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-lg font-bold text-slate-900">
                     ${product.price.toFixed(2)}
                 </span>
                 <div className="flex items-center">
@@ -31,12 +33,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                             key={i}
                             className={`w-4 h-4 ${
                                 i < Math.floor(product.rating)
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
+                                    ? "text-indigo-500 fill-current"
+                                    : "text-slate-300"
                             }`}
                         />
                     ))}
-                    <span className="text-sm text-gray-600 ml-1">
+                    <span className="text-sm text-slate-600 ml-1">
                         ({product.rating})
                     </span>
                 </div>

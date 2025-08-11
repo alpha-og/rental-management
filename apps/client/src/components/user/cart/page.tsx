@@ -1,7 +1,7 @@
 import React from "react";
 import { Navbar } from "@client/components/ui/navbar";
 import CartDisplay from "./CartDisplay";
-import { WhiteFooter } from "@client/components/ui/white-footer";
+import { Footer } from "@client/components/ui/footer";
 
 const CartPage = () => {
     return (
@@ -10,7 +10,7 @@ const CartPage = () => {
             <main className="flex-grow">
                 <CartDisplay />
             </main>
-            <WhiteFooter />
+            <Footer />
         </div>
     );
 };

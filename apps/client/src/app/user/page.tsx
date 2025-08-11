@@ -4,7 +4,7 @@ import { Filter as FilterIcon, X } from "lucide-react";
 import Filter from "@client/components/user/filter";
 import { ProductGrid, Product } from "@client/components/user/product";
 import { Navbar } from "@client/components/ui/navbar"; // <-- added
-import { WhiteFooter } from "@client/components/ui/white-footer";
+import { Footer } from "@client/components/ui/footer";
 
 interface FilterState {
     priceRange: [number, number];
@@ -140,7 +140,7 @@ export default function UserPage(): JSX.Element {
                     />
                 </div>
             </div>
-            <WhiteFooter />
+            <Footer />
         </div>
     );
 }
