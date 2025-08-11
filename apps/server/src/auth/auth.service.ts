@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+    Injectable,
+    UnauthorizedException,
+    BadRequestException,
+} from "@nestjs/common";
 import { UserService } from "../user/user.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
@@ -67,7 +71,7 @@ export class AuthService {
     async register(userDto: CreateUserDto): Promise<AuthResponse> {
         const existingUser = await this.userService.findByEmail(userDto.email);
         if (existingUser) {
-            throw new UnauthorizedException("Username already exists");
+            throw new BadRequestException("Email already exists");
         }
         const newUser = await this.userService.create(userDto);
         // Generate tokens directly instead of calling login

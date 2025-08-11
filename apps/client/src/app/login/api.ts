@@ -25,6 +25,9 @@ export async function login(
             "/api/v1/auth/login",
             body,
         );
+        localStorage.setItem("accessToken", data.accessToken);
+
+        // Optionally, you can also store the access token in
         return data;
     } catch (e) {
         if (e instanceof AxiosError && e.response?.data) {
