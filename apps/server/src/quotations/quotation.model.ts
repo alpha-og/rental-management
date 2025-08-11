@@ -5,6 +5,7 @@ import {
     DataType,
     Default,
     ForeignKey,
+    HasOne,
     Model,
     PrimaryKey,
     Table,
@@ -36,15 +37,15 @@ export class Quotation extends Model<
     @Column(DataType.UUID)
     declare productId: string;
 
-    //   @BelongsTo(() => Product)
-    // declare product?: Product;
+    @BelongsTo(() => Product)
+    declare product?: Product;
 
     // @ForeignKey(() => Rate)
     @AllowNull(false)
     @Column(DataType.UUID)
     declare rateId: string;
 
-    @BelongsTo(() => Rate)
+    @HasOne(() => Rate)
     declare rate?: Rate;
 
     @AllowNull(false)
