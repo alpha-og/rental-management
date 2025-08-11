@@ -14,10 +14,45 @@ import {
 import { Input } from "@client/components/ui/input";
 import { Label } from "@client/components/ui/label";
 
+interface PasswordStrength {
+    score: number;
+    label: "Very Weak" | "Weak" | "Fair" | "Good" | "Strong";
+    color: string;
+}
+
+const analyzePasswordStrength = (password: string): PasswordStrength => {
+    let score = 0;
+
+    // Length check
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1; // lowercase
+    if (/[A-Z]/.test(password)) score += 1; // uppercase
+    if (/[0-9]/.test(password)) score += 1; // numbers
+    if (/[^A-Za-z0-9]/.test(password)) score += 1; // special characters
+
+    // Bonus for very long passwords
+    if (password.length >= 16) score += 1;
+
+    if (score <= 2) return { score, label: "Very Weak", color: "text-red-600" };
+    if (score <= 3) return { score, label: "Weak", color: "text-orange-500" };
+    if (score <= 4) return { score, label: "Fair", color: "text-yellow-500" };
+    if (score <= 5) return { score, label: "Good", color: "text-blue-500" };
+    return { score, label: "Strong", color: "text-green-600" };
+};
+
 export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const passwordStrength = analyzePasswordStrength(password);
+    const passwordsMatch =
+        password === confirmPassword && confirmPassword.length > 0;
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -38,11 +73,27 @@ export default function RegisterPage() {
             typeof rawConfirm === "string" ? rawConfirm : "";
 
         if (!name || !email || !phone || !password || !confirmPassword) return;
+
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        // Check password strength (optional - you can require minimum strength)
+        const strength = analyzePasswordStrength(password);
+        if (strength.score < 3) {
+            setError("Password is too weak. Please use a stronger password.");
+            return;
+        }
+
         setLoading(true);
         try {
             await register({ name, email, phone, password, confirmPassword });
             setSuccess(true);
             e.currentTarget.reset();
+            setPassword("");
+            setConfirmPassword("");
         } catch (err) {
             const msg =
                 typeof err === "object" && err && "message" in err
@@ -108,8 +159,99 @@ export default function RegisterPage() {
                                     id="password"
                                     name="password"
                                     type="password"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
                                     required
                                 />
+                                {password.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span>Password strength:</span>
+                                            <span
+                                                className={
+                                                    passwordStrength.color
+                                                }
+                                            >
+                                                {passwordStrength.label}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-1">
+                                            <div
+                                                className={`h-1 rounded-full transition-all duration-300 ${
+                                                    passwordStrength.score <= 2
+                                                        ? "bg-red-500"
+                                                        : passwordStrength.score <=
+                                                            3
+                                                          ? "bg-orange-500"
+                                                          : passwordStrength.score <=
+                                                              4
+                                                            ? "bg-yellow-500"
+                                                            : passwordStrength.score <=
+                                                                5
+                                                              ? "bg-blue-500"
+                                                              : "bg-green-500"
+                                                }`}
+                                                style={{
+                                                    width: `${Math.min((passwordStrength.score / 6) * 100, 100)}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="text-xs text-gray-600 space-y-1">
+                                            <div>Password requirements:</div>
+                                            <ul className="space-y-0.5 ml-2">
+                                                <li
+                                                    className={
+                                                        password.length >= 8
+                                                            ? "text-green-600"
+                                                            : "text-gray-400"
+                                                    }
+                                                >
+                                                    ✓ At least 8 characters
+                                                </li>
+                                                <li
+                                                    className={
+                                                        /[a-z]/.test(password)
+                                                            ? "text-green-600"
+                                                            : "text-gray-400"
+                                                    }
+                                                >
+                                                    ✓ Lowercase letter
+                                                </li>
+                                                <li
+                                                    className={
+                                                        /[A-Z]/.test(password)
+                                                            ? "text-green-600"
+                                                            : "text-gray-400"
+                                                    }
+                                                >
+                                                    ✓ Uppercase letter
+                                                </li>
+                                                <li
+                                                    className={
+                                                        /[0-9]/.test(password)
+                                                            ? "text-green-600"
+                                                            : "text-gray-400"
+                                                    }
+                                                >
+                                                    ✓ Number
+                                                </li>
+                                                <li
+                                                    className={
+                                                        /[^A-Za-z0-9]/.test(
+                                                            password,
+                                                        )
+                                                            ? "text-green-600"
+                                                            : "text-gray-400"
+                                                    }
+                                                >
+                                                    ✓ Special character
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="confirmPassword">
@@ -119,8 +261,25 @@ export default function RegisterPage() {
                                     id="confirmPassword"
                                     name="confirmPassword"
                                     type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
                                     required
                                 />
+                                {confirmPassword.length > 0 && (
+                                    <div className="text-xs">
+                                        {passwordsMatch ? (
+                                            <span className="text-green-600">
+                                                ✓ Passwords match
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-600">
+                                                ✗ Passwords do not match
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </CardContent>
