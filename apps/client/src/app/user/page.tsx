@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 import { Filter as FilterIcon, X } from "lucide-react";
 import Filter from "@client/components/user/filter";
 import { ProductGrid, Product } from "@client/components/user/product";
