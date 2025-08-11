@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { Button } from "@client/components/ui/button";
 import { cn } from "@client/lib/utils";
-import { useMobileMenu } from "@client/components/admin/common";
 import {
     getRentalData,
     updateRentalData,
@@ -74,7 +73,7 @@ export default function RentalPage() {
     const [processingSend, setProcessingSend] = useState(false);
     const [processingDelete, setProcessingDelete] = useState(false);
 
-    const { MobileMenuButton } = useMobileMenu();
+    // Removed page-level MobileMenuButton; header button is provided by AdminLayout
 
     // Load rental data on component mount
     useEffect(() => {
@@ -578,9 +577,7 @@ export default function RentalPage() {
                         Manage rental orders and customer information
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <MobileMenuButton />
-                </div>
+                {/* Intentionally left empty: global header (AdminLayout) renders the mobile menu button */}
             </div>
 
             {/* Rental Info Section */}

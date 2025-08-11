@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@client/components/ui/button";
 import { Input } from "@client/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import {
     Package,
     BarChart3,
     X,
+    RefreshCw,
 } from "lucide-react";
 import {
     getReportingData,
@@ -27,32 +28,89 @@ import {
 
 // Chart Components (Simple implementations since we can't use external chart libraries)
 const BarChart = ({ data, title }: { data: RevenueData[]; title: string }) => {
-    const maxRevenue = Math.max(...data.map((d) => d.revenue));
+    const maxRevenue = Math.max(1, ...data.map((d) => d.revenue));
+    const displayed = data.slice(-6);
+    const barCount = displayed.length;
+    const chartHeight = 200; // px
+    const ticks = [0, 0.25, 0.5, 0.75, 1];
+
+    const formatK = (n: number) => `$${(n / 1000).toFixed(0)}k`;
 
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <div className="flex items-end justify-between h-64 p-4 bg-gray-50 rounded-lg">
-                {data.slice(-6).map((item) => (
-                    <div
-                        key={item.period}
-                        className="flex flex-col items-center space-y-2"
-                    >
-                        <div className="text-xs text-gray-600">
-                            ${(item.revenue / 1000).toFixed(0)}k
-                        </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+                <div className="relative" style={{ height: chartHeight }}>
+                    {/* Horizontal gridlines and Y-axis labels */}
+                    {ticks.map((t) => (
                         <div
-                            className="bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600 w-8"
+                            key={`grid-${t}`}
+                            className="absolute left-0 right-0"
+                            style={{ bottom: t * chartHeight }}
+                        >
+                            <div
+                                className="absolute left-0 -translate-x-1/2 text-xs text-gray-500 select-none"
+                                style={{ transform: "translate(-10px, 6px)" }}
+                            >
+                                {formatK(t * maxRevenue)}
+                            </div>
+                            <div className="border-t border-gray-200" />
+                        </div>
+                    ))}
+
+                    {/* Vertical separators aligned to bars */}
+                    {barCount > 1 && (
+                        <div className="absolute inset-0 pointer-events-none">
+                            {displayed.map((_, idx) => (
+                                <div
+                                    key={`v-${idx}`}
+                                    className="absolute top-0 bottom-0 border-l border-gray-100"
+                                    style={{
+                                        left: `${(idx / (barCount - 1)) * 100}%`,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Bars */}
+                    <div className="absolute inset-0 flex items-end justify-between px-4">
+                        {displayed.map((item) => (
+                            <div
+                                key={item.period}
+                                className="flex flex-col items-center"
+                                style={{ width: `${100 / barCount}%` }}
+                            >
+                                <div className="text-[10px] text-gray-600 mb-1">
+                                    {formatK(item.revenue)}
+                                </div>
+                                <div
+                                    className="bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600 mx-auto"
+                                    style={{
+                                        height: `${(item.revenue / maxRevenue) * chartHeight}px`,
+                                        minHeight: 4,
+                                        width: 24,
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {/* X-axis labels */}
+                <div className="mt-2 flex justify-between px-4">
+                    {displayed.map((item) => (
+                        <div
+                            key={`label-${item.period}`}
+                            className="text-xs text-gray-700 font-medium"
                             style={{
-                                height: `${(item.revenue / maxRevenue) * 200}px`,
-                                minHeight: "4px",
+                                width: `${100 / barCount}%`,
+                                textAlign: "center",
                             }}
-                        />
-                        <div className="text-xs text-gray-700 font-medium">
+                        >
                             {item.period}
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -65,28 +123,169 @@ const PieChartComponent = ({
     data: CategoryData[];
     title: string;
 }) => {
+    // Build a segmented conic-gradient from category percentages
+    const gradient = (() => {
+        let acc = 0;
+        const parts: string[] = [];
+        data.forEach((item) => {
+            const start = acc;
+            const end = acc + item.percentage;
+            parts.push(`${item.color} ${start}% ${end}%`);
+            acc = end;
+        });
+        return `conic-gradient(${parts.join(", ")})`;
+    })();
+
+    const total = data.reduce((sum, item) => sum + item.revenue, 0);
+
+    // Hover state and positioning
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [tooltipPos, setTooltipPos] = useState<{
+        x: number;
+        y: number;
+    } | null>(null);
+
+    const getSegmentIndexFromAngle = (anglePct: number) => {
+        let acc = 0;
+        for (let i = 0; i < data.length; i++) {
+            const start = acc;
+            const end = acc + data[i].percentage;
+            if (anglePct >= start && anglePct < end) return i;
+            acc = end;
+        }
+        return data.length - 1; // fallback to last segment
+    };
+
+    const handleMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+        const el = containerRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.hypot(dx, dy);
+
+        // Outer radius and inner radius (inset-6 ~ 24px)
+        const outerR = rect.width / 2;
+        const innerInset = 24; // px, matches Tailwind inset-6
+        const innerR = outerR - innerInset;
+
+        // Only consider points within the donut ring
+        if (dist < innerR || dist > outerR) {
+            setHoveredIndex(null);
+            setTooltipPos(null);
+            return;
+        }
+
+        // 0 degrees at +X axis, clockwise, convert to [0,100)% percentage of circle
+        const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const normDeg = (angleDeg + 360) % 360;
+        const anglePct = (normDeg / 360) * 100;
+        const idx = getSegmentIndexFromAngle(anglePct);
+        setHoveredIndex(idx);
+
+        // Position tooltip slightly away from cursor
+        const mag = Math.max(1, Math.hypot(dx, dy));
+        const ux = dx / mag;
+        const uy = dy / mag;
+        const offset = 10; // px
+        let tx = x + ux * offset;
+        let ty = y + uy * offset;
+
+        // Clamp within container
+        tx = Math.min(Math.max(8, tx), rect.width - 8);
+        ty = Math.min(Math.max(8, ty), rect.height - 8);
+        setTooltipPos({ x: tx, y: ty });
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredIndex(null);
+        setTooltipPos(null);
+    };
+
+    // Highlight overlay to dim non-hovered segments
+    const overlayGradient = (() => {
+        if (hoveredIndex == null) return undefined;
+        let acc = 0;
+        for (let i = 0; i < data.length; i++) {
+            const start = acc;
+            const end = acc + data[i].percentage;
+            if (i === hoveredIndex) {
+                const before = `rgba(0,0,0,0.15) 0% ${start}%`;
+                const target = `transparent ${start}% ${end}%`;
+                const after = `rgba(0,0,0,0.15) ${end}% 100%`;
+                return `conic-gradient(${before}, ${target}, ${after})`;
+            }
+            acc = end;
+        }
+        return undefined;
+    })();
+
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             <div className="flex items-center justify-center">
-                <div className="relative w-48 h-48">
-                    {/* Simple pie chart representation using borders */}
-                    <div className="w-full h-full rounded-full bg-gradient-to-r from-blue-500 via-green-500 via-yellow-500 via-red-500 to-purple-500" />
+                <div
+                    ref={containerRef}
+                    className="relative w-48 h-48"
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    {/* Segmented donut using conic-gradient */}
+                    <div
+                        className="w-full h-full rounded-full"
+                        style={{ background: gradient }}
+                    />
+
+                    {/* Highlight overlay: dims non-hovered segments */}
+                    {overlayGradient && (
+                        <div
+                            className="absolute inset-0 rounded-full pointer-events-none"
+                            style={{ background: overlayGradient }}
+                        />
+                    )}
+
                     <div className="absolute inset-6 bg-white rounded-full flex items-center justify-center">
                         <div className="text-center">
                             <div className="text-2xl font-bold text-gray-900">
-                                $
-                                {(
-                                    data.reduce(
-                                        (sum, item) => sum + item.revenue,
-                                        0,
-                                    ) / 1000
-                                ).toFixed(0)}
-                                k
+                                ${(total / 1000).toFixed(0)}k
                             </div>
                             <div className="text-sm text-gray-600">Total</div>
                         </div>
                     </div>
+
+                    {/* Tooltip */}
+                    {hoveredIndex != null && tooltipPos && (
+                        <div
+                            className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-md px-2 py-1 text-xs text-gray-900 whitespace-nowrap"
+                            style={{
+                                left: tooltipPos.x,
+                                top: tooltipPos.y,
+                                transform: "translate(-50%, -120%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className="inline-block w-2 h-2 rounded-full"
+                                    style={{
+                                        backgroundColor:
+                                            data[hoveredIndex].color,
+                                    }}
+                                />
+                                <span className="font-medium">
+                                    {data[hoveredIndex].category}
+                                </span>
+                            </div>
+                            <div className="mt-0.5 text-gray-600">
+                                {data[hoveredIndex].percentage}% • $
+                                {data[hoveredIndex].revenue.toLocaleString()}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="space-y-2">
@@ -209,6 +408,8 @@ const ReportingPage = () => {
     const [activeTab, setActiveTab] = useState<
         "overview" | "products" | "customers"
     >("overview");
+    const [autoRefresh, setAutoRefresh] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
     // Load data on component mount and period change
     const loadData = useCallback(async () => {
@@ -216,6 +417,7 @@ const ReportingPage = () => {
             setLoading(true);
             const data = await getReportingData(selectedPeriod);
             setReportingData(data);
+            setLastUpdated(Date.now());
         } catch (error) {
             console.error("Failed to load reporting data:", error);
         } finally {
@@ -226,6 +428,15 @@ const ReportingPage = () => {
     useEffect(() => {
         void loadData();
     }, [loadData]);
+
+    // Auto-refresh polling
+    useEffect(() => {
+        if (!autoRefresh) return;
+        const id = setInterval(() => {
+            void loadData();
+        }, 30000); // 30s
+        return () => clearInterval(id);
+    }, [autoRefresh, loadData]);
 
     const handleExportReport = async (
         type: "revenue" | "products" | "customers" | "full",
@@ -286,9 +497,15 @@ const ReportingPage = () => {
                     <h1 className="text-2xl font-bold text-gray-900">
                         Reporting & Analytics
                     </h1>
-                    <p className="text-gray-600">
-                        Track performance and analyze business metrics
-                    </p>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <p>Track performance and analyze business metrics</p>
+                        {lastUpdated && (
+                            <span className="text-xs text-gray-500">
+                                Updated{" "}
+                                {new Date(lastUpdated).toLocaleTimeString()}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -333,6 +550,26 @@ const ReportingPage = () => {
                             {period.label}
                         </button>
                     ))}
+                </div>
+                <div className="ml-auto flex items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            className="h-4 w-4"
+                            checked={autoRefresh}
+                            onChange={(e) => setAutoRefresh(e.target.checked)}
+                        />
+                        Auto-refresh
+                    </label>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void loadData()}
+                        className="flex items-center gap-1"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Refresh
+                    </Button>
                 </div>
             </div>
 

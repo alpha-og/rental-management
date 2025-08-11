@@ -4,6 +4,7 @@ import React, { useState, createContext, useContext } from "react";
 import Sidebar from "./sidebar";
 import MobileMenuButton from "./mobile-menu-button";
 import { cn } from "@client/lib/utils";
+import { usePathname } from "next/navigation";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -34,6 +35,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState(defaultActiveTab);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const pathname = usePathname();
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -55,6 +57,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         MobileMenuButton: MobileMenuButtonComponent,
     };
 
+    const pageTitle = (() => {
+        if (!pathname) return "Dashboard";
+        if (pathname.includes("/admin/dashboard")) return "Dashboard";
+        if (pathname.includes("/admin/rental")) return "Rental";
+        if (pathname.includes("/admin/order")) return "Order";
+        if (pathname.includes("/admin/products")) return "Products";
+        if (pathname.includes("/admin/reporting")) return "Reporting";
+        if (pathname.includes("/admin/settings")) return "Settings";
+        return "Dashboard";
+    })();
+
+    const hideHeader = pathname?.includes("/admin/settings");
+
     return (
         <MobileMenuContext.Provider value={contextValue}>
             <div className={cn("min-h-screen bg-gray-50 flex", className)}>
@@ -67,6 +82,26 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0 w-full md:w-auto">
+                    {/* Global Header across admin pages (hidden on Settings) */}
+                    {!hideHeader && (
+                        <header className="bg-white border-b px-4 sm:px-6 py-6.5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="md:hidden">
+                                        <MobileMenuButton
+                                            isOpen={isMobileMenuOpen}
+                                            onClick={toggleMobileMenu}
+                                        />
+                                    </div>
+                                    <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
+                                        {pageTitle}
+                                    </h1>
+                                </div>
+                                <div />
+                            </div>
+                        </header>
+                    )}
+
                     <main className="flex-1 overflow-x-hidden overflow-y-auto">
                         {children}
                     </main>

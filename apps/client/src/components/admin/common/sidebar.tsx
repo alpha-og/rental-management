@@ -250,7 +250,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                         <ChevronLeft
                             className={cn(
-                                "h-4 w-4 text-gray-500 transition-transform duration-200",
+                                "h-5 w-4 text-gray-500 transition-transform duration-200",
                                 isCollapsed && "rotate-180",
                             )}
                         />

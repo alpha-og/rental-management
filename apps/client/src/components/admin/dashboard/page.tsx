@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { cn } from "@client/lib/utils";
-import { useMobileMenu } from "@client/components/admin/common";
 import {
     getDashboardData,
     type DashboardData,
@@ -39,7 +38,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
     >
         <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">{title}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-">{title}</p>
                 <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">
                     {value.toLocaleString()}
                 </p>
@@ -147,7 +146,7 @@ export default function AdminDashboard() {
     );
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const { MobileMenuButton } = useMobileMenu();
+    // Mobile menu handled by global AdminLayout header
 
     useEffect(() => {
         const fetchData = async () => {
@@ -232,10 +231,9 @@ export default function AdminDashboard() {
     return (
         <div className="flex flex-col h-full bg-gray-50">
             {/* Header */}
-            <header className="bg-white border-b px-4 sm:px-6 py-4">
+            {/* <header className="bg-white border-b px-4 py-6 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {/* Mobile menu button */}
                         <div className="md:hidden">
                             <MobileMenuButton />
                         </div>
@@ -244,7 +242,7 @@ export default function AdminDashboard() {
                         </h1>
                     </div>
                 </div>
-            </header>
+            </header> */}
 
             {/* Main Content */}
             <main className="p-4 sm:p-6">
