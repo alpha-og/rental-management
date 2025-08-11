@@ -93,6 +93,8 @@ export class Product extends Model<
     @HasMany(() => Reservation)
     declare reservations: Reservation[];
 
-    @BelongsToMany(() => Quotation, { through: "quotationProducts" })
+    @BelongsToMany(() => Quotation, {
+        through: "productQuotation",
+    })
     declare quotations: Quotation[];
 }
