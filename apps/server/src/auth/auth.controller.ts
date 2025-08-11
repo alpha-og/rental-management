@@ -5,6 +5,13 @@ import { CreateUserDto } from "../user/user.dto";
 import { LoginDto } from "./login.dto";
 import { Public } from "./public.decorator";
 import type { Response, Request } from "express";
+import {
+    ApiOperation,
+    ApiResponse,
+    ApiBody,
+    ApiTags,
+    ApiCookieAuth,
+} from "@nestjs/swagger";
 
 // Define interface for authenticated request
 interface AuthenticatedRequest extends Request {
@@ -14,12 +21,20 @@ interface AuthenticatedRequest extends Request {
     };
 }
 
+@ApiTags("auth")
 @Controller("auth")
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Public()
     @Post("login")
+    @ApiOperation({ summary: "Log in a user" })
+    @ApiBody({ type: LoginDto })
+    @ApiResponse({
+        status: 201,
+        description: "The user has been successfully logged in.",
+    })
+    @ApiResponse({ status: 401, description: "Unauthorized." })
     async login(
         @Body() loginDto: LoginDto,
         @Res({ passthrough: true }) res: Response,
@@ -39,6 +54,13 @@ export class AuthController {
     }
     @Public()
     @Post("register")
+    @ApiOperation({ summary: "Register a new user" })
+    @ApiBody({ type: CreateUserDto })
+    @ApiResponse({
+        status: 201,
+        description: "The user has been successfully registered.",
+    })
+    @ApiResponse({ status: 400, description: "Bad request." })
     async register(
         @Body() createUserDto: CreateUserDto,
         @Res({ passthrough: true }) res: Response,
@@ -56,6 +78,13 @@ export class AuthController {
         return { accessToken };
     }
     @Post("logout") // Changed to POST for better security
+    @ApiCookieAuth()
+    @ApiOperation({ summary: "Log out a user" })
+    @ApiResponse({
+        status: 200,
+        description: "The user has been successfully logged out.",
+    })
+    @ApiResponse({ status: 401, description: "Unauthorized." })
     async logout(
         @Req() req: AuthenticatedRequest,
         @Res({ passthrough: true }) res: Response,
@@ -66,6 +95,13 @@ export class AuthController {
         return { message: "Logged out successfully" };
     }
     @Post("refresh")
+    @ApiCookieAuth()
+    @ApiOperation({ summary: "Refresh the access token" })
+    @ApiResponse({
+        status: 201,
+        description: "The access token has been successfully refreshed.",
+    })
+    @ApiResponse({ status: 401, description: "Unauthorized." })
     async refreshToken(
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
