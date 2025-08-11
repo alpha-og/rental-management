@@ -52,10 +52,10 @@ const DUMMY_ORDER_LINES = [
 // GET /api/v1/rentals/[id]/order-lines/[lineId] - Get single order line
 export async function GET(
     request: NextRequest,
-    context: { params: { id: string; lineId: string } },
+    { params }: { params: { id: string; lineId: string } },
 ) {
     try {
-        const { id, lineId } = context.params;
+        const { id, lineId } = params;
 
         // Simulate some processing delay
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -84,10 +84,10 @@ export async function GET(
 // PUT /api/v1/rentals/[id]/order-lines/[lineId] - Update order line
 export async function PUT(
     request: NextRequest,
-    context: { params: { id: string; lineId: string } },
+    { params }: { params: { id: string; lineId: string } },
 ) {
     try {
-        const { id, lineId } = context.params;
+        const { id, lineId } = params;
         const updates = (await request.json()) as {
             product?: string;
             quantity?: number;
@@ -156,10 +156,10 @@ export async function PUT(
 // DELETE /api/v1/rentals/[id]/order-lines/[lineId] - Delete order line
 export async function DELETE(
     request: NextRequest,
-    context: { params: { id: string; lineId: string } },
+    { params }: { params: { id: string; lineId: string } },
 ) {
     try {
-        const { id, lineId } = context.params;
+        const { id, lineId } = params;
 
         // Simulate some processing delay
         await new Promise((resolve) => setTimeout(resolve, 100));
