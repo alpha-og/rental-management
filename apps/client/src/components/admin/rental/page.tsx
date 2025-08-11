@@ -21,6 +21,9 @@ import {
     getRentalData,
     updateRentalData,
     updateRentalStatus,
+    addOrderLine,
+    updateOrderLine,
+    deleteOrderLine,
     type RentalFormData,
     type RentalOrderLine,
 } from "@client/app/admin/rental/api";
@@ -137,6 +140,10 @@ export default function RentalPage() {
         "order-lines" | "other-details" | "rental-notes"
     >("order-lines");
     const [termsAndConditions, setTermsAndConditions] = useState("");
+    const [editingOrderLine, setEditingOrderLine] = useState<{
+        index: number;
+        line: RentalOrderLine;
+    } | null>(null);
     const { MobileMenuButton } = useMobileMenu();
 
     // Load rental data on component mount
@@ -194,6 +201,357 @@ export default function RentalPage() {
     };
 
     const { untaxedTotal, totalTax, total } = calculateTotals();
+
+    // PDF Generation function
+    const generatePDF = () => {
+        if (!rentalData) return;
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) return;
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Rental Order - ${rentalData.id}</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 40px; 
+                        color: #333; 
+                        line-height: 1.6; 
+                    }
+                    .header { 
+                        border-bottom: 3px solid #2563eb; 
+                        padding-bottom: 20px; 
+                        margin-bottom: 30px; 
+                    }
+                    .header h1 { 
+                        color: #2563eb; 
+                        margin: 0; 
+                        font-size: 28px; 
+                    }
+                    .status { 
+                        display: inline-block; 
+                        padding: 6px 12px; 
+                        border-radius: 20px; 
+                        font-size: 12px; 
+                        font-weight: 600; 
+                        text-transform: uppercase; 
+                        margin-top: 10px;
+                    }
+                    .status.quotation_sent { background: #fef3c7; color: #92400e; }
+                    .status.confirmed { background: #dcfce7; color: #166534; }
+                    .status.draft { background: #f3f4f6; color: #374151; }
+                    .status.cancelled { background: #fee2e2; color: #991b1b; }
+                    .info-grid { 
+                        display: grid; 
+                        grid-template-columns: 1fr 1fr; 
+                        gap: 30px; 
+                        margin-bottom: 30px; 
+                    }
+                    .info-item { 
+                        margin-bottom: 15px; 
+                    }
+                    .info-label { 
+                        font-weight: 600; 
+                        color: #6b7280; 
+                        display: block; 
+                        margin-bottom: 5px; 
+                    }
+                    .info-value { 
+                        color: #111827; 
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin: 30px 0; 
+                    }
+                    th, td { 
+                        padding: 12px; 
+                        text-align: left; 
+                        border-bottom: 1px solid #e5e7eb; 
+                    }
+                    th { 
+                        background: #f9fafb; 
+                        font-weight: 600; 
+                        color: #374151; 
+                    }
+                    .text-center { text-align: center; }
+                    .text-right { text-align: right; }
+                    .totals { 
+                        float: right; 
+                        width: 300px; 
+                        margin-top: 20px; 
+                    }
+                    .totals-row { 
+                        display: flex; 
+                        justify-content: space-between; 
+                        padding: 8px 0; 
+                    }
+                    .totals-total { 
+                        border-top: 2px solid #374151; 
+                        font-weight: 700; 
+                        font-size: 16px; 
+                    }
+                    .terms { 
+                        margin-top: 40px; 
+                        padding-top: 20px; 
+                        border-top: 1px solid #e5e7eb; 
+                    }
+                    .terms h3 { 
+                        color: #374151; 
+                        margin-bottom: 10px; 
+                    }
+                    .terms-content { 
+                        white-space: pre-line; 
+                        color: #6b7280; 
+                        font-size: 14px; 
+                    }
+                    @media print {
+                        body { margin: 20px; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Rental Order ${rentalData.id}</h1>
+                    <span class="status ${rentalData.status}">${rentalData.status.replace("_", " ")}</span>
+                </div>
+                
+                <div class="info-grid">
+                    <div>
+                        <div class="info-item">
+                            <span class="info-label">Customer:</span>
+                            <span class="info-value">${rentalData.customer}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Invoice Address:</span>
+                            <span class="info-value">${rentalData.invoiceAddress}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Delivery Address:</span>
+                            <span class="info-value">${rentalData.deliveryAddress}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Rental Template:</span>
+                            <span class="info-value">${rentalData.rentalTemplate}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-item">
+                            <span class="info-label">Expiration:</span>
+                            <span class="info-value">${rentalData.expiration}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Order Date:</span>
+                            <span class="info-value">${rentalData.rentalOrderDate}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Price List:</span>
+                            <span class="info-value">${rentalData.priceList}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Rental Period:</span>
+                            <span class="info-value">${rentalData.rentalPeriod}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Duration:</span>
+                            <span class="info-value">${rentalData.rentalDuration}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Unit Price</th>
+                            <th class="text-center">Tax</th>
+                            <th class="text-center">Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orderLines
+                            .map(
+                                (line) => `
+                            <tr>
+                                <td>${line.product}</td>
+                                <td class="text-center">${line.quantity}</td>
+                                <td class="text-center">${line.unitPrice.toLocaleString()}</td>
+                                <td class="text-center">${line.tax.toLocaleString()}</td>
+                                <td class="text-center">${line.subTotal.toLocaleString()}</td>
+                            </tr>
+                        `,
+                            )
+                            .join("")}
+                    </tbody>
+                </table>
+
+                <div style="clear: both;">
+                    <div class="totals">
+                        <div class="totals-row">
+                            <span>Untaxed Total:</span>
+                            <span>${untaxedTotal.toLocaleString()}</span>
+                        </div>
+                        <div class="totals-row">
+                            <span>Tax:</span>
+                            <span>${totalTax.toLocaleString()}</span>
+                        </div>
+                        <div class="totals-row totals-total">
+                            <span>Total:</span>
+                            <span>${total.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${
+                    termsAndConditions
+                        ? `
+                    <div class="terms">
+                        <h3>Terms & Conditions</h3>
+                        <div class="terms-content">${termsAndConditions}</div>
+                    </div>
+                `
+                        : ""
+                }
+
+                <button class="no-print" onclick="window.print()" style="
+                    position: fixed; 
+                    top: 20px; 
+                    right: 20px; 
+                    background: #2563eb; 
+                    color: white; 
+                    border: none; 
+                    padding: 10px 20px; 
+                    border-radius: 6px; 
+                    cursor: pointer;
+                    font-weight: 600;
+                ">Print PDF</button>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+    };
+
+    // Add new order line
+    const handleAddProduct = async () => {
+        if (!rentalData) return;
+
+        const newOrderLine = {
+            product: "New Product",
+            quantity: 1,
+            unitPrice: 100,
+            tax: 10,
+            subTotal: 110,
+        };
+
+        try {
+            const addedLine = await addOrderLine(rentalData.id, newOrderLine);
+            setOrderLines((prev) => [...prev, addedLine]);
+        } catch (err) {
+            console.error("Failed to add order line:", err);
+        }
+    };
+
+    // Edit order line
+    const handleEditOrderLine = (index: number, line: RentalOrderLine) => {
+        setEditingOrderLine({ index, line });
+    };
+
+    // Update order line
+    const handleUpdateOrderLine = async (
+        index: number,
+        updates: Partial<RentalOrderLine>,
+    ) => {
+        if (!rentalData) return;
+
+        const currentLine = orderLines[index];
+        const updatedLine = { ...currentLine, ...updates };
+
+        // Recalculate subtotal if quantity or price changed
+        if (updates.quantity !== undefined || updates.unitPrice !== undefined) {
+            updatedLine.subTotal =
+                updatedLine.quantity * updatedLine.unitPrice + updatedLine.tax;
+        }
+
+        try {
+            const updated = await updateOrderLine(
+                rentalData.id,
+                currentLine.id,
+                updatedLine,
+            );
+            setOrderLines((prev) =>
+                prev.map((line, i) => (i === index ? updated : line)),
+            );
+        } catch (err) {
+            console.error("Failed to update order line:", err);
+            // Update local state anyway for fallback
+            setOrderLines((prev) =>
+                prev.map((line, i) => (i === index ? updatedLine : line)),
+            );
+        }
+    };
+
+    // Remove order line
+    const handleRemoveOrderLine = async (index: number) => {
+        if (!rentalData) return;
+
+        const lineToRemove = orderLines[index];
+
+        try {
+            await deleteOrderLine(rentalData.id, lineToRemove.id);
+            setOrderLines((prev) => prev.filter((_, i) => i !== index));
+        } catch (err) {
+            console.error("Failed to remove order line:", err);
+            // Remove from local state anyway for fallback
+            setOrderLines((prev) => prev.filter((_, i) => i !== index));
+        }
+    };
+
+    // Update prices based on price list
+    const handleUpdatePrices = async () => {
+        if (!rentalData) return;
+
+        try {
+            // Simulate price update by adding 10% to all unit prices
+            const updatedLines = orderLines.map((line) => ({
+                ...line,
+                unitPrice: Math.round(line.unitPrice * 1.1),
+                subTotal: Math.round(
+                    line.unitPrice * 1.1 * line.quantity + line.tax,
+                ),
+            }));
+
+            // Update all lines
+            const updatePromises = updatedLines.map((line) =>
+                updateOrderLine(rentalData.id, line.id, {
+                    unitPrice: line.unitPrice,
+                    subTotal: line.subTotal,
+                }),
+            );
+
+            await Promise.all(updatePromises);
+            setOrderLines(updatedLines);
+
+            // Show success message
+            console.log("Prices updated successfully!");
+        } catch (err) {
+            console.error("Failed to update prices:", err);
+        }
+    };
+
+    // Create new rental
+    const handleCreateNew = () => {
+        // For now, just reload with a new ID
+        // In a real app, this would navigate to a new rental form
+        window.location.href = "/admin/rental?new=true";
+    };
 
     const handleStatusAction = async (action: string) => {
         if (!rentalData) return;
@@ -318,7 +676,11 @@ export default function RentalPage() {
                         </h1>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleCreateNew}
+                        >
                             <Plus className="h-4 w-4" />
                             Create
                         </Button>
@@ -399,7 +761,7 @@ export default function RentalPage() {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => void handleStatusAction("print")}
+                                onClick={generatePDF}
                             >
                                 <Printer className="h-4 w-4" />
                                 Print
@@ -543,6 +905,9 @@ export default function RentalPage() {
                                         size="sm"
                                         variant="outline"
                                         disabled={isConfirmed}
+                                        onClick={() =>
+                                            void handleUpdatePrices()
+                                        }
                                     >
                                         Update Prices
                                     </Button>
@@ -625,14 +990,13 @@ export default function RentalPage() {
                                                     key={index}
                                                     orderLine={line}
                                                     onEdit={() =>
-                                                        console.log(
-                                                            "Edit line",
+                                                        handleEditOrderLine(
                                                             index,
+                                                            line,
                                                         )
                                                     }
                                                     onRemove={() =>
-                                                        console.log(
-                                                            "Remove line",
+                                                        void handleRemoveOrderLine(
                                                             index,
                                                         )
                                                     }
@@ -644,7 +1008,11 @@ export default function RentalPage() {
 
                                 {/* Add Product Button */}
                                 <div>
-                                    <Button size="sm" variant="outline">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => void handleAddProduct()}
+                                    >
                                         <Plus className="h-4 w-4" />
                                         Add Product
                                     </Button>
@@ -713,6 +1081,129 @@ export default function RentalPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Edit Order Line Modal */}
+            {editingOrderLine && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                        <h3 className="text-lg font-semibold mb-4">
+                            Edit Order Line
+                        </h3>
+                        <div className="space-y-4">
+                            <FormField
+                                label="Product"
+                                value={editingOrderLine.line.product}
+                                onChange={(value) =>
+                                    setEditingOrderLine((prev) =>
+                                        prev
+                                            ? {
+                                                  ...prev,
+                                                  line: {
+                                                      ...prev.line,
+                                                      product: value,
+                                                  },
+                                              }
+                                            : null,
+                                    )
+                                }
+                            />
+                            <FormField
+                                label="Quantity"
+                                value={editingOrderLine.line.quantity.toString()}
+                                onChange={(value) => {
+                                    const quantity = parseInt(value) || 0;
+                                    setEditingOrderLine((prev) =>
+                                        prev
+                                            ? {
+                                                  ...prev,
+                                                  line: {
+                                                      ...prev.line,
+                                                      quantity,
+                                                      subTotal:
+                                                          quantity *
+                                                              prev.line
+                                                                  .unitPrice +
+                                                          prev.line.tax,
+                                                  },
+                                              }
+                                            : null,
+                                    );
+                                }}
+                            />
+                            <FormField
+                                label="Unit Price"
+                                value={editingOrderLine.line.unitPrice.toString()}
+                                onChange={(value) => {
+                                    const unitPrice = parseFloat(value) || 0;
+                                    setEditingOrderLine((prev) =>
+                                        prev
+                                            ? {
+                                                  ...prev,
+                                                  line: {
+                                                      ...prev.line,
+                                                      unitPrice,
+                                                      subTotal:
+                                                          prev.line.quantity *
+                                                              unitPrice +
+                                                          prev.line.tax,
+                                                  },
+                                              }
+                                            : null,
+                                    );
+                                }}
+                            />
+                            <FormField
+                                label="Tax"
+                                value={editingOrderLine.line.tax.toString()}
+                                onChange={(value) => {
+                                    const tax = parseFloat(value) || 0;
+                                    setEditingOrderLine((prev) =>
+                                        prev
+                                            ? {
+                                                  ...prev,
+                                                  line: {
+                                                      ...prev.line,
+                                                      tax,
+                                                      subTotal:
+                                                          prev.line.quantity *
+                                                              prev.line
+                                                                  .unitPrice +
+                                                          tax,
+                                                  },
+                                              }
+                                            : null,
+                                    );
+                                }}
+                            />
+                            <div className="text-sm text-gray-600">
+                                Sub Total:{" "}
+                                {editingOrderLine.line.subTotal.toLocaleString()}
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2 mt-6">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditingOrderLine(null)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    void handleUpdateOrderLine(
+                                        editingOrderLine.index,
+                                        editingOrderLine.line,
+                                    );
+                                    setEditingOrderLine(null);
+                                }}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
