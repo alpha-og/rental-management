@@ -17,6 +17,12 @@ async function bootstrap() {
         // temporarily hardcoded origins
         origin: ["http://localhost:3000", "http://35.222.216.48"],
         credentials: true,
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "X-Requested-With",
+            "Accept",
+        ],
     });
 
     // Enable cookie parser
