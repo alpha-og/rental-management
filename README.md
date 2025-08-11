@@ -6,6 +6,7 @@ Rental application streamlines the entire rental process. It provides a unified 
 
 ## Team
 
+- Team Number: 74
 - Team Members:
     - Shravan Nander Pandala (Team Lead)
     - Pranav S
