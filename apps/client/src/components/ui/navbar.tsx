@@ -5,7 +5,7 @@ import { Button } from "./button";
 import {
     Home,
     ShoppingCart,
-    Heart,
+    // Heart,
     User,
     Menu as MenuIcon,
     X as XIcon,
@@ -55,11 +55,11 @@ export function Navbar({ hideAuthButtons }: NavbarProps) {
                                 <ShoppingCart className="mr-2 h-4 w-4" /> Cart
                             </Link>
                         </Button>
-                        <Button asChild variant="ghost">
+                        {/* <Button asChild variant="ghost">
                             <Link href="/wishlist">
                                 <Heart className="mr-2 h-4 w-4" /> Wishlist
                             </Link>
-                        </Button>
+                        </Button> */}
                         <Button asChild variant="ghost">
                             <Link href="/user">
                                 <User className="mr-2 h-4 w-4" /> User Info
@@ -98,14 +98,14 @@ export function Navbar({ hideAuthButtons }: NavbarProps) {
                                 <ShoppingCart className="mr-2 h-4 w-4" /> Cart
                             </Link>
                         </Button>
-                        <Button asChild variant="ghost" className="w-full">
+                        {/* <Button asChild variant="ghost" className="w-full">
                             <Link
                                 href="/wishlist"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <Heart className="mr-2 h-4 w-4" /> Wishlist
                             </Link>
-                        </Button>
+                        </Button> */}
                         <Button asChild variant="ghost" className="w-full">
                             <Link
                                 href="/user"
