@@ -342,10 +342,24 @@ export default function RentalPage() {
 
     // PDF Generation function
     const generatePDF = () => {
-        if (!rentalData) return;
+        console.log("Generate PDF button clicked");
+
+        if (!rentalData) {
+            console.error("No rental data available for PDF generation");
+            alert("No rental data available for PDF generation");
+            return;
+        }
+
+        console.log("Generating PDF for rental:", rentalData.id);
 
         const printWindow = window.open("", "_blank");
-        if (!printWindow) return;
+        if (!printWindow) {
+            console.error("Failed to open print window - popup blocked?");
+            alert(
+                "Failed to open print window. Please allow popups and try again.",
+            );
+            return;
+        }
 
         const htmlContent = `
             <!DOCTYPE html>
@@ -712,7 +726,12 @@ export default function RentalPage() {
     };
 
     const handleStatusAction = async (action: string) => {
-        if (!rentalData) return;
+        if (!rentalData) {
+            console.error("No rental data available for action:", action);
+            return;
+        }
+
+        console.log(`Starting action: ${action} on rental ${rentalData.id}`);
 
         try {
             console.log(
@@ -723,6 +742,7 @@ export default function RentalPage() {
                 action as "send" | "print" | "confirm" | "cancel",
             );
             setRentalData(updatedRental);
+            console.log(`Action ${action} completed successfully`);
         } catch (err) {
             console.error(`Failed to perform action ${action}:`, err);
             // Action failed, but continue with current state
@@ -987,7 +1007,10 @@ export default function RentalPage() {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => void handleStatusAction("send")}
+                                onClick={() => {
+                                    console.log("Send button clicked");
+                                    void handleStatusAction("send");
+                                }}
                                 disabled={isConfirmed}
                             >
                                 <Send className="h-4 w-4" />
@@ -996,7 +1019,10 @@ export default function RentalPage() {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={generatePDF}
+                                onClick={() => {
+                                    console.log("Print button clicked");
+                                    generatePDF();
+                                }}
                             >
                                 <Printer className="h-4 w-4" />
                                 Print
@@ -1004,9 +1030,10 @@ export default function RentalPage() {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() =>
-                                    void handleStatusAction("confirm")
-                                }
+                                onClick={() => {
+                                    console.log("Confirm button clicked");
+                                    void handleStatusAction("confirm");
+                                }}
                                 disabled={isConfirmed}
                             >
                                 <Check className="h-4 w-4" />
@@ -1019,9 +1046,12 @@ export default function RentalPage() {
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() =>
-                                            void handleSmartDelivery()
-                                        }
+                                        onClick={() => {
+                                            console.log(
+                                                "2 Delivery button clicked",
+                                            );
+                                            void handleSmartDelivery();
+                                        }}
                                         disabled={
                                             processingDelivery ||
                                             rentalData.deliveryStatus ===
@@ -1037,9 +1067,12 @@ export default function RentalPage() {
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() =>
-                                            void handleCreateInvoice()
-                                        }
+                                        onClick={() => {
+                                            console.log(
+                                                "Invoice button clicked",
+                                            );
+                                            void handleCreateInvoice();
+                                        }}
                                         disabled={
                                             processingInvoice ||
                                             rentalData.invoiceStatus ===
@@ -1058,9 +1091,12 @@ export default function RentalPage() {
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() =>
-                                            void handlePickupTransfer()
-                                        }
+                                        onClick={() => {
+                                            console.log(
+                                                "Pickup Transfer button clicked",
+                                            );
+                                            void handlePickupTransfer();
+                                        }}
                                         disabled={
                                             !rentalData.deliveryStatus ||
                                             rentalData.deliveryStatus ===
@@ -1077,15 +1113,23 @@ export default function RentalPage() {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() =>
-                                    void handleStatusAction("cancel")
-                                }
+                                onClick={() => {
+                                    console.log("Cancel button clicked");
+                                    void handleStatusAction("cancel");
+                                }}
                                 disabled={isConfirmed}
                             >
                                 <X className="h-4 w-4" />
                                 Cancel
                             </Button>
-                            <Button size="sm" variant="ghost">
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                    console.log("More options button clicked");
+                                    // TODO: Implement dropdown menu for additional options
+                                }}
+                            >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </div>
