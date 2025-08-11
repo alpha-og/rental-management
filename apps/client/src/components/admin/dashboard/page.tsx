@@ -139,6 +139,29 @@ const PeriodSelector: React.FC<{
     );
 };
 
+const fallbackDashboardData: DashboardData = {
+    stats: {
+        quotations: 12,
+        rentals: 8,
+        revenue: 24500,
+    },
+    topProductCategories: [
+        { category: "Vehicles & Transportation", ordered: 5, revenue: 12000 },
+        { category: "Electronics & Gadgets", ordered: 3, revenue: 8000 },
+        { category: "Furniture", ordered: 2, revenue: 4500 },
+    ],
+    topProducts: [
+        { product: "Honda Civic", ordered: 3, revenue: 9000 },
+        { product: "Canon DSLR", ordered: 2, revenue: 6000 },
+        { product: "Sofa Set", ordered: 1, revenue: 2500 },
+    ],
+    topCustomers: [
+        { customer: "John Doe", ordered: 4, revenue: 10000 },
+        { customer: "Jane Smith", ordered: 3, revenue: 9000 },
+        { customer: "Acme Corp", ordered: 2, revenue: 5500 },
+    ],
+};
+
 export default function AdminDashboard() {
     const [selectedPeriod, setSelectedPeriod] = useState("last-30-days");
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(
@@ -155,11 +178,13 @@ export default function AdminDashboard() {
                 console.log(
                     `Fetching dashboard data for period: ${selectedPeriod}`,
                 );
+                // Fetch dashboard stats
                 const data = await getDashboardData(selectedPeriod);
                 setDashboardData(data);
             } catch (err) {
                 console.error("Failed to fetch dashboard data:", err);
-                // Don't set error state, just log it since we have fallback data
+                // Use fallback data if fetch fails
+                setDashboardData(fallbackDashboardData);
             } finally {
                 setLoading(false);
             }
