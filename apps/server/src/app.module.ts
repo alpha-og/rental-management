@@ -17,7 +17,7 @@ import { QuotationsModule } from "./quotations/quotations.module";
 import { AssociationsModule } from "./associations/associations.module";
 import { MulterModule } from "@nestjs/platform-express";
 import { AppwriteService } from "./config/appwrite.config";
-
+import { DashboardModule } from "./dashboard/dashboard.module";
 @Module({
     imports: [
         SequelizeModule.forRoot({
@@ -57,6 +57,7 @@ import { AppwriteService } from "./config/appwrite.config";
         OrdersModule,
         AttachmentsModule,
         QuotationsModule,
+        DashboardModule,
     ],
     controllers: [AppController],
     providers: [

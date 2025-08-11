@@ -29,7 +29,6 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column(DataType.UUID)
     declare id: string;
 
-    @Unique
     @AllowNull(false)
     @Column(DataType.STRING)
     declare name: string;
