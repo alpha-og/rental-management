@@ -18,6 +18,29 @@ interface ProductAttributes {
 // Add creation interface (excludes auto-generated fields)
 type ProductCreationAttributes = Omit<ProductAttributes, "id">;
 
+const productCategory = [
+    "Vehicles & Transportation",
+    "Tools & Equipment",
+    "Electronics & Gadgets",
+    "Home Appliances",
+    "Furniture",
+    "Party & Event Supplies",
+    "Clothing & Costumes",
+    "Sports & Outdoor Gear",
+    "Musical Instruments",
+    "Cameras & Photography Gear",
+    "Books & Media",
+    "Real Estate & Spaces",
+    "Art & Decor",
+    "Health & Fitness Equipment",
+    "Kids & Baby Items",
+    "Gardening & Landscaping Tools",
+    "Watercraft & Boats",
+    "Luxury Items & Collectibles",
+    "Pet Supplies",
+    "Specialty & Niche Items",
+];
+
 @Table({
     tableName: "products", //  Explicit table name
     timestamps: true, //  Adds createdAt/updatedAt
@@ -46,7 +69,7 @@ export class Product extends Model<
     @Column(DataType.INTEGER)
     declare quantity: number;
 
-    @Column(DataType.ENUM())
+    @Column(DataType.ENUM(...productCategory))
     declare category: string;
 
     @Column(DataType.TEXT)
