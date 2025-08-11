@@ -23,6 +23,7 @@ async function bootstrap() {
         .setDescription("API for rental management")
         .setVersion("0.1")
         .addTag("rental")
+        .addCookieAuth("refreshToken")
         .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup("api", app, documentFactory);

@@ -1,4 +1,11 @@
-import { Controller, Post, Res, UnauthorizedException } from "@nestjs/common";
+import {
+    Controller,
+    Post,
+    Res,
+    UnauthorizedException,
+    HttpStatus,
+    Get,
+} from "@nestjs/common";
 import { Body, Req } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../user/user.dto";
@@ -11,6 +18,7 @@ import {
     ApiBody,
     ApiTags,
     ApiCookieAuth,
+    ApiBearerAuth,
 } from "@nestjs/swagger";
 
 // Define interface for authenticated request
@@ -31,10 +39,22 @@ export class AuthController {
     @ApiOperation({ summary: "Log in a user" })
     @ApiBody({ type: LoginDto })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.OK,
         description: "The user has been successfully logged in.",
+        schema: {
+            type: "object",
+            properties: {
+                accessToken: {
+                    type: "string",
+                    example: "your_access_token",
+                },
+            },
+        },
     })
-    @ApiResponse({ status: 401, description: "Unauthorized." })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: "Unauthorized.",
+    })
     async login(
         @Body() loginDto: LoginDto,
         @Res({ passthrough: true }) res: Response,
@@ -57,10 +77,22 @@ export class AuthController {
     @ApiOperation({ summary: "Register a new user" })
     @ApiBody({ type: CreateUserDto })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         description: "The user has been successfully registered.",
+        schema: {
+            type: "object",
+            properties: {
+                accessToken: {
+                    type: "string",
+                    example: "your_access_token",
+                },
+            },
+        },
     })
-    @ApiResponse({ status: 400, description: "Bad request." })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: "Bad request.",
+    })
     async register(
         @Body() createUserDto: CreateUserDto,
         @Res({ passthrough: true }) res: Response,
@@ -77,14 +109,27 @@ export class AuthController {
 
         return { accessToken };
     }
-    @Post("logout") // Changed to POST for better security
+    @Get("logout") // Changed to POST for better security
+    @ApiBearerAuth()
     @ApiCookieAuth()
     @ApiOperation({ summary: "Log out a user" })
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         description: "The user has been successfully logged out.",
+        schema: {
+            type: "object",
+            properties: {
+                message: {
+                    type: "string",
+                    example: "Logged out successfully",
+                },
+            },
+        },
     })
-    @ApiResponse({ status: 401, description: "Unauthorized." })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: "Unauthorized.",
+    })
     async logout(
         @Req() req: AuthenticatedRequest,
         @Res({ passthrough: true }) res: Response,
@@ -95,13 +140,26 @@ export class AuthController {
         return { message: "Logged out successfully" };
     }
     @Post("refresh")
+    @ApiBearerAuth()
     @ApiCookieAuth()
     @ApiOperation({ summary: "Refresh the access token" })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         description: "The access token has been successfully refreshed.",
+        schema: {
+            type: "object",
+            properties: {
+                accessToken: {
+                    type: "string",
+                    example: "your_new_access_token",
+                },
+            },
+        },
     })
-    @ApiResponse({ status: 401, description: "Unauthorized." })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: "Unauthorized.",
+    })
     async refreshToken(
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
