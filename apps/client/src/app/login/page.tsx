@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@client/components/login/button";
+import { Button } from "@client/components/ui/button";
 import {
     Card,
     CardContent,
@@ -10,8 +10,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@client/components/login/card";
-import { Input } from "@client/components/login/input";
-import { Label } from "@client/components/login/label";
+import { Input } from "@client/components/ui/input";
+import { Label } from "@client/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
