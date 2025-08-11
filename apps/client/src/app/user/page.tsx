@@ -4,6 +4,7 @@ import { Filter as FilterIcon, X } from "lucide-react";
 import Filter from "@client/components/user/filter";
 import { ProductGrid, Product } from "@client/components/user/product";
 import { Navbar } from "@client/components/ui/navbar"; // <-- added
+import { Footer } from "@client/components/ui/footer";
 
 interface FilterState {
     priceRange: [number, number];
@@ -34,77 +35,82 @@ export default function UserPage(): JSX.Element {
         filters.categories.length > 0 || filters.rating > 0;
 
     return (
-        <div className="min-h-screen bg-gray-100 relative">
+        <div className="flex flex-col min-h-screen bg-gray-100 relative">
             <Navbar hideAuthButtons /> {/* Navbar added here */}
-            {/* Filter Toggle Button */}
-            <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg shadow-lg transition-colors duration-200"
-                aria-label="Toggle filter drawer"
-            >
-                <FilterIcon
-                    className={`w-5 h-5 transform transition-transform duration-200 ${isFilterOpen ? "rotate-180" : ""}`}
-                />
-            </button>
-            {/* Main Content */}
-            <div
-                className={`transition-all duration-300 ${isFilterOpen ? "lg:mr-80" : "mr-0"}`}
-            >
-                <div className="p-6">
-                    <h1 className="text-2xl font-bold mb-6">User Profile</h1>
+            <main className="flex-grow">
+                {/* Filter Toggle Button */}
+                <button
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg shadow-lg transition-colors duration-200"
+                    aria-label="Toggle filter drawer"
+                >
+                    <FilterIcon
+                        className={`w-5 h-5 transform transition-transform duration-200 ${isFilterOpen ? "rotate-180" : ""}`}
+                    />
+                </button>
+                {/* Main Content */}
+                <div
+                    className={`transition-all duration-300 ${isFilterOpen ? "lg:mr-80" : "mr-0"}`}
+                >
+                    <div className="p-6">
+                        <h1 className="text-2xl font-bold mb-6">
+                            User Profile
+                        </h1>
 
-                    {hasActiveFilters && (
-                        <div className="mb-6">
-                            <h3 className="text-sm font-medium text-gray-600 mb-2">
-                                Active Filters:
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {filters.categories.map((category) => (
-                                    <span
-                                        key={category}
-                                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                    >
-                                        {category}
-                                        <button
-                                            onClick={() =>
-                                                setFilters((prev) => ({
-                                                    ...prev,
-                                                    categories:
-                                                        prev.categories.filter(
-                                                            (c) =>
-                                                                c !== category,
-                                                        ),
-                                                }))
-                                            }
-                                            className="ml-1 hover:text-blue-600"
+                        {hasActiveFilters && (
+                            <div className="mb-6">
+                                <h3 className="text-sm font-medium text-gray-600 mb-2">
+                                    Active Filters:
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {filters.categories.map((category) => (
+                                        <span
+                                            key={category}
+                                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                                         >
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    </span>
-                                ))}
-                                {filters.rating > 0 && (
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        {filters.rating}+ stars
-                                        <button
-                                            onClick={() =>
-                                                setFilters((prev) => ({
-                                                    ...prev,
-                                                    rating: 0,
-                                                }))
-                                            }
-                                            className="ml-1 hover:text-yellow-600"
-                                        >
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    </span>
-                                )}
+                                            {category}
+                                            <button
+                                                onClick={() =>
+                                                    setFilters((prev) => ({
+                                                        ...prev,
+                                                        categories:
+                                                            prev.categories.filter(
+                                                                (c) =>
+                                                                    c !==
+                                                                    category,
+                                                            ),
+                                                    }))
+                                                }
+                                                className="ml-1 hover:text-blue-600"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                    {filters.rating > 0 && (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            {filters.rating}+ stars
+                                            <button
+                                                onClick={() =>
+                                                    setFilters((prev) => ({
+                                                        ...prev,
+                                                        rating: 0,
+                                                    }))
+                                                }
+                                                className="ml-1 hover:text-yellow-600"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <ProductGrid products={sampleProducts} />
+                        <ProductGrid products={sampleProducts} />
+                    </div>
                 </div>
-            </div>
+            </main>
             {isFilterOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
@@ -112,7 +118,7 @@ export default function UserPage(): JSX.Element {
                 />
             )}
             <div
-                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 z-40 ${
+                className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-xl transform transition-transform duration-300 z-40 ${
                     isFilterOpen ? "translate-x-0" : "translate-x-full"
                 }`}
             >
@@ -134,6 +140,7 @@ export default function UserPage(): JSX.Element {
                     />
                 </div>
             </div>
+            <Footer />
         </div>
     );
 }

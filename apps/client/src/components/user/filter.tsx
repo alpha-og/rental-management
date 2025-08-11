@@ -65,13 +65,13 @@ const Filter: React.FC<FilterProps> = ({
         <div className="p-4 space-y-6">
             {/* Clear Filters */}
             <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-slate-600">
                     {activeFilterCount} filter
                     {activeFilterCount !== 1 ? "s" : ""} applied
                 </span>
                 <button
                     onClick={onClearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+                    className="text-sm text-indigo-600 hover:text-purple-600 flex items-center space-x-1 transition-colors"
                 >
                     <X className="w-3 h-3" />
                     <span>Clear all</span>
@@ -80,13 +80,13 @@ const Filter: React.FC<FilterProps> = ({
 
             {/* Price Range */}
             <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-800 uppercase tracking-wide">
+                <h3 className="text-sm font-medium text-slate-800 uppercase tracking-wide">
                     Price Range
                 </h3>
                 <div className="space-y-3">
                     <div className="flex space-x-3">
                         <div className="flex-1">
-                            <label className="block text-xs text-gray-600 mb-1">
+                            <label className="block text-xs text-slate-600 mb-1">
                                 Min
                             </label>
                             <input
@@ -98,12 +98,12 @@ const Filter: React.FC<FilterProps> = ({
                                         parseInt(e.target.value) || 0,
                                     )
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
                                 placeholder="0"
                             />
                         </div>
                         <div className="flex-1">
-                            <label className="block text-xs text-gray-600 mb-1">
+                            <label className="block text-xs text-slate-600 mb-1">
                                 Max
                             </label>
                             <input
@@ -115,12 +115,12 @@ const Filter: React.FC<FilterProps> = ({
                                         parseInt(e.target.value) || 1000,
                                     )
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
                                 placeholder="1000"
                             />
                         </div>
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-slate-600">
                         ${filters.priceRange[0]} - ${filters.priceRange[1]}
                     </div>
                 </div>
@@ -128,7 +128,7 @@ const Filter: React.FC<FilterProps> = ({
 
             {/* Categories */}
             <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-800 uppercase tracking-wide">
+                <h3 className="text-sm font-medium text-slate-800 uppercase tracking-wide">
                     Categories
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -141,9 +141,9 @@ const Filter: React.FC<FilterProps> = ({
                                 type="checkbox"
                                 checked={filters.categories.includes(category)}
                                 onChange={() => handleCategoryToggle(category)}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2"
                             />
-                            <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                            <span className="text-sm text-slate-700 group-hover:text-slate-900 transition-colors duration-200">
                                 {category}
                             </span>
                         </label>
@@ -153,7 +153,7 @@ const Filter: React.FC<FilterProps> = ({
 
             {/* Rating */}
             <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-800 uppercase tracking-wide">
+                <h3 className="text-sm font-medium text-slate-800 uppercase tracking-wide">
                     Minimum Rating
                 </h3>
                 <div className="flex items-center space-x-1">
@@ -163,8 +163,8 @@ const Filter: React.FC<FilterProps> = ({
                             onClick={() => handleRatingChange(star)}
                             className={`transition-colors duration-200 ${
                                 star <= filters.rating
-                                    ? "text-yellow-400"
-                                    : "text-gray-300 hover:text-yellow-200"
+                                    ? "text-indigo-500"
+                                    : "text-slate-300 hover:text-indigo-300"
                             }`}
                         >
                             <svg
@@ -187,7 +187,7 @@ const Filter: React.FC<FilterProps> = ({
                         </button>
                     ))}
                     {filters.rating > 0 && (
-                        <span className="text-sm text-gray-600 ml-2">
+                        <span className="text-sm text-slate-600 ml-2">
                             {filters.rating} star
                             {filters.rating !== 1 ? "s" : ""} & up
                         </span>

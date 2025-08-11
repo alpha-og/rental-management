@@ -8,6 +8,7 @@ import {
     FileText,
     Package,
     BarChart3,
+    X,
 } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { cn } from "@client/lib/utils";
@@ -29,15 +30,24 @@ const StatsCard: React.FC<StatsCardProps> = ({
     icon,
     className,
 }) => (
-    <div className={cn("bg-white rounded-lg border p-6 shadow-sm", className)}>
+    <div
+        className={cn(
+            "bg-white rounded-lg border p-4 sm:p-6 shadow-sm",
+            className,
+        )}
+    >
         <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm text-gray-600 mb-1">{title}</p>
-                <p className="text-2xl font-semibold text-gray-900">
+            <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 mb-">{title}</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">
                     {value.toLocaleString()}
                 </p>
             </div>
-            {icon && <div className="p-2 bg-gray-50 rounded-lg">{icon}</div>}
+            {icon && (
+                <div className="p-2 bg-gray-50 rounded-lg flex-shrink-0 ml-3">
+                    {icon}
+                </div>
+            )}
         </div>
     </div>
 );
@@ -57,17 +67,19 @@ interface TableProps {
 
 const Table: React.FC<TableProps> = ({ title, data, columns, className }) => (
     <div className={cn("bg-white rounded-lg border shadow-sm", className)}>
-        <div className="p-4 border-b">
-            <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+        <div className="p-3 sm:p-4 border-b">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+                {title}
+            </h3>
         </div>
-        <div className="overflow-hidden">
-            <table className="w-full">
+        <div className="overflow-x-auto">
+            <table className="w-full min-w-[300px]">
                 <thead className="bg-gray-50">
                     <tr>
                         {columns.map((column, index) => (
                             <th
                                 key={index}
-                                className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b"
+                                className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 border-b whitespace-nowrap"
                             >
                                 {column.label}
                             </th>
@@ -80,7 +92,7 @@ const Table: React.FC<TableProps> = ({ title, data, columns, className }) => (
                             {columns.map((column, colIndex) => (
                                 <td
                                     key={colIndex}
-                                    className="px-4 py-3 text-sm text-gray-900"
+                                    className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 whitespace-nowrap"
                                 >
                                     {column.render
                                         ? column.render(row[column.key], row)
@@ -110,11 +122,11 @@ const PeriodSelector: React.FC<{
     ];
 
     return (
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto min-w-[160px]"
             >
                 {periods.map((period) => (
                     <option key={period.value} value={period.value}>
@@ -134,6 +146,7 @@ export default function AdminDashboard() {
     );
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    // Mobile menu handled by global AdminLayout header
 
     useEffect(() => {
         const fetchData = async () => {
@@ -218,29 +231,30 @@ export default function AdminDashboard() {
     return (
         <div className="flex flex-col h-full bg-gray-50">
             {/* Header */}
-            <header className="bg-white border-b px-6 py-4">
+            {/* <header className="bg-white border-b px-4 py-6 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <h1 className="text-xl font-semibold text-gray-900">
+                    <div className="flex items-center gap-3">
+                        <div className="md:hidden">
+                            <MobileMenuButton />
+                        </div>
+                        <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
                             Dashboard
                         </h1>
                     </div>
-                    {/* Space reserved for mobile menu button */}
-                    <div className="w-10 md:w-0"></div>
                 </div>
-            </header>
+            </header> */}
 
             {/* Main Content */}
-            <main className="p-6">
+            <main className="p-4 sm:p-6">
                 {/* Backend Status Banner */}
-                <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
                     <div className="flex items-center gap-2 text-blue-800">
-                        <Info className="h-4 w-4" />
-                        <span className="text-sm">
+                        <Info className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">
                             <strong>Development Mode:</strong> Currently using
                             fallback data. Backend API endpoints are ready to be
                             implemented at{" "}
-                            <code className="bg-blue-100 px-1 rounded">
+                            <code className="bg-blue-100 px-1 rounded text-xs">
                                 localhost:3001/api/v1
                             </code>
                         </span>
@@ -248,27 +262,38 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Search and Period Selector */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:flex-initial">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                                 type="text"
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 w-96"
+                                className="pl-10 pr-10 w-full sm:w-72 lg:w-96"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Clear search"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
-                    <PeriodSelector
-                        value={selectedPeriod}
-                        onChange={setSelectedPeriod}
-                    />
+                    <div className="w-full sm:w-auto">
+                        <PeriodSelector
+                            value={selectedPeriod}
+                            onChange={setSelectedPeriod}
+                        />
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <StatsCard
                         title="Quotations"
                         value={dashboardData.stats.quotations}
@@ -287,7 +312,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Data Tables */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
                     <Table
                         title="Top Product Categories"
                         data={
@@ -317,7 +342,7 @@ export default function AdminDashboard() {
                             >[]
                         }
                         columns={topCustomerColumns}
-                        className="lg:col-span-2"
+                        className="xl:col-span-2"
                     />
                 </div>
             </main>
