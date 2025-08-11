@@ -29,6 +29,9 @@ import {
     Edit,
     MoreHorizontal,
     Info,
+    Truck,
+    FileText,
+    Package,
 } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { Button } from "@client/components/ui/button";
@@ -41,8 +44,13 @@ import {
     addOrderLine,
     updateOrderLine,
     deleteOrderLine,
+    createDeliveryOrders,
+    createInvoice,
+    redirectToPickupTransfer,
     type RentalFormData,
     type RentalOrderLine,
+    type DeliveryOrder,
+    type Invoice,
 } from "@client/app/admin/rental/api";
 
 interface StatusBadgeProps {
@@ -59,12 +67,12 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
                 };
             case "quotation_sent":
                 return {
-                    label: "Quotation sent",
+                    label: "Quotation",
                     className: "bg-yellow-100 text-yellow-800",
                 };
             case "confirmed":
                 return {
-                    label: "Confirmed",
+                    label: "Read-Only",
                     className: "bg-green-100 text-green-800",
                 };
             case "cancelled":
@@ -86,6 +94,109 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         <span
             className={cn(
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                config.className,
+            )}
+        >
+            {config.label}
+        </span>
+    );
+};
+
+// New component for delivery and invoice status badges
+const DeliveryStatusBadge: React.FC<{
+    status?: RentalFormData["deliveryStatus"];
+}> = ({ status }) => {
+    if (!status) return null;
+
+    const getStatusConfig = (
+        status: NonNullable<RentalFormData["deliveryStatus"]>,
+    ) => {
+        switch (status) {
+            case "pending":
+                return {
+                    label: "Pending",
+                    className: "bg-yellow-100 text-yellow-800",
+                };
+            case "pickup_ready":
+                return {
+                    label: "Ready",
+                    className: "bg-blue-100 text-blue-800",
+                };
+            case "delivered":
+                return {
+                    label: "Delivered",
+                    className: "bg-green-100 text-green-800",
+                };
+            case "returned":
+                return {
+                    label: "Returned",
+                    className: "bg-purple-100 text-purple-800",
+                };
+            default:
+                return {
+                    label: "Unknown",
+                    className: "bg-gray-100 text-gray-800",
+                };
+        }
+    };
+
+    const config = getStatusConfig(status);
+
+    return (
+        <span
+            className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                config.className,
+            )}
+        >
+            {config.label}
+        </span>
+    );
+};
+
+const InvoiceStatusBadge: React.FC<{
+    status?: RentalFormData["invoiceStatus"];
+}> = ({ status }) => {
+    if (!status) return null;
+
+    const getStatusConfig = (
+        status: NonNullable<RentalFormData["invoiceStatus"]>,
+    ) => {
+        switch (status) {
+            case "pending":
+                return {
+                    label: "Pending",
+                    className: "bg-yellow-100 text-yellow-800",
+                };
+            case "created":
+                return {
+                    label: "Created",
+                    className: "bg-blue-100 text-blue-800",
+                };
+            case "sent":
+                return {
+                    label: "Sent",
+                    className: "bg-orange-100 text-orange-800",
+                };
+            case "paid":
+                return {
+                    label: "Paid",
+                    className: "bg-green-100 text-green-800",
+                };
+            default:
+                return {
+                    label: "Unknown",
+                    className: "bg-gray-100 text-gray-800",
+                };
+        }
+    };
+
+    const config = getStatusConfig(status);
+
+    return (
+        <span
+            className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
                 config.className,
             )}
         >
@@ -161,6 +272,16 @@ export default function RentalPage() {
         index: number;
         line: RentalOrderLine;
     } | null>(null);
+
+    // New state for enhanced features
+    const [, setDeliveryOrders] = useState<{
+        pickup?: DeliveryOrder;
+        return?: DeliveryOrder;
+    }>({});
+    const [, setInvoice] = useState<Invoice | null>(null);
+    const [processingDelivery, setProcessingDelivery] = useState(false);
+    const [processingInvoice, setProcessingInvoice] = useState(false);
+
     const { MobileMenuButton } = useMobileMenu();
 
     // Load rental data on component mount
@@ -377,6 +498,26 @@ export default function RentalPage() {
                             <span class="info-label">Duration:</span>
                             <span class="info-value">${rentalData.rentalDuration}</span>
                         </div>
+                        ${
+                            rentalData.deliveryStatus
+                                ? `
+                        <div class="info-item">
+                            <span class="info-label">Delivery Status:</span>
+                            <span class="info-value">${rentalData.deliveryStatus.replace("_", " ")}</span>
+                        </div>
+                        `
+                                : ""
+                        }
+                        ${
+                            rentalData.invoiceStatus
+                                ? `
+                        <div class="info-item">
+                            <span class="info-label">Invoice Status:</span>
+                            <span class="info-value">${rentalData.invoiceStatus}</span>
+                        </div>
+                        `
+                                : ""
+                        }
                     </div>
                 </div>
 
@@ -588,6 +729,67 @@ export default function RentalPage() {
         }
     };
 
+    // New enhanced action handlers
+    const handleSmartDelivery = async () => {
+        if (!rentalData || rentalData.status !== "confirmed") return;
+
+        setProcessingDelivery(true);
+        try {
+            console.log(`Creating delivery orders for rental ${rentalData.id}`);
+            const orders = await createDeliveryOrders(rentalData.id);
+            setDeliveryOrders(orders);
+
+            // Update rental with new delivery status
+            const updatedRental = await updateRentalData(rentalData.id, {
+                deliveryStatus: "pickup_ready",
+            });
+            setRentalData(updatedRental);
+
+            console.log("Delivery orders created:", orders);
+        } catch (err) {
+            console.error("Failed to create delivery orders:", err);
+        } finally {
+            setProcessingDelivery(false);
+        }
+    };
+
+    const handleCreateInvoice = async () => {
+        if (!rentalData || rentalData.status !== "confirmed") return;
+
+        setProcessingInvoice(true);
+        try {
+            console.log(`Creating invoice for rental ${rentalData.id}`);
+            const newInvoice = await createInvoice(rentalData.id);
+            setInvoice(newInvoice);
+
+            // Update rental with new invoice status
+            const updatedRental = await updateRentalData(rentalData.id, {
+                invoiceStatus: "created",
+            });
+            setRentalData(updatedRental);
+
+            console.log("Invoice created:", newInvoice);
+        } catch (err) {
+            console.error("Failed to create invoice:", err);
+        } finally {
+            setProcessingInvoice(false);
+        }
+    };
+
+    const handlePickupTransfer = async () => {
+        if (!rentalData) return;
+
+        try {
+            console.log(
+                `Redirecting to pickup transfer for rental ${rentalData.id}`,
+            );
+            const transferUrl = await redirectToPickupTransfer(rentalData.id);
+            window.location.href = transferUrl;
+        } catch (err) {
+            console.error("Failed to redirect to pickup transfer:", err);
+        }
+    };
+
     const isConfirmed = rentalData?.status === "confirmed";
 
     // Loading state
@@ -764,6 +966,22 @@ export default function RentalPage() {
                                 {rentalData.id}
                             </h2>
                             <StatusBadge status={rentalData.status} />
+                            {rentalData.deliveryStatus && (
+                                <div className="flex items-center gap-1">
+                                    <Truck className="h-3 w-3 text-gray-500" />
+                                    <DeliveryStatusBadge
+                                        status={rentalData.deliveryStatus}
+                                    />
+                                </div>
+                            )}
+                            {rentalData.invoiceStatus && (
+                                <div className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3 text-gray-500" />
+                                    <InvoiceStatusBadge
+                                        status={rentalData.invoiceStatus}
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -794,6 +1012,68 @@ export default function RentalPage() {
                                 <Check className="h-4 w-4" />
                                 Confirm
                             </Button>
+
+                            {/* New Smart Buttons - Only show for confirmed orders */}
+                            {isConfirmed && (
+                                <>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                            void handleSmartDelivery()
+                                        }
+                                        disabled={
+                                            processingDelivery ||
+                                            rentalData.deliveryStatus ===
+                                                "delivered"
+                                        }
+                                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                                    >
+                                        <Truck className="h-4 w-4" />
+                                        {processingDelivery
+                                            ? "Processing..."
+                                            : "2 Delivery"}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                            void handleCreateInvoice()
+                                        }
+                                        disabled={
+                                            processingInvoice ||
+                                            rentalData.invoiceStatus ===
+                                                "created" ||
+                                            rentalData.invoiceStatus ===
+                                                "sent" ||
+                                            rentalData.invoiceStatus === "paid"
+                                        }
+                                        className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                        {processingInvoice
+                                            ? "Creating..."
+                                            : "Invoice"}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                            void handlePickupTransfer()
+                                        }
+                                        disabled={
+                                            !rentalData.deliveryStatus ||
+                                            rentalData.deliveryStatus ===
+                                                "pending"
+                                        }
+                                        className="bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
+                                    >
+                                        <Package className="h-4 w-4" />
+                                        Pickup Transfer
+                                    </Button>
+                                </>
+                            )}
+
                             <Button
                                 size="sm"
                                 variant="outline"

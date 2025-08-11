@@ -25,6 +25,8 @@ export interface RentalFormData {
     rentalPeriod: string;
     rentalDuration: string;
     status: "draft" | "quotation_sent" | "confirmed" | "cancelled";
+    deliveryStatus?: "pending" | "pickup_ready" | "delivered" | "returned";
+    invoiceStatus?: "pending" | "created" | "sent" | "paid";
 }
 
 export interface RentalOrderLine {
@@ -34,6 +36,25 @@ export interface RentalOrderLine {
     unitPrice: number;
     tax: number;
     subTotal: number;
+}
+
+export interface DeliveryOrder {
+    id: string;
+    rentalId: string;
+    type: "pickup" | "return";
+    status: "pending" | "ready" | "in_transit" | "completed";
+    scheduledDate: string;
+    address: string;
+    notes?: string;
+}
+
+export interface Invoice {
+    id: string;
+    rentalId: string;
+    amount: number;
+    status: "draft" | "sent" | "paid" | "overdue";
+    createdDate: string;
+    dueDate: string;
 }
 
 export interface RentalData {
@@ -61,6 +82,8 @@ const FALLBACK_RENTAL_DATA: RentalData = {
         rentalPeriod: "Monthly",
         rentalDuration: "6 months",
         status: "quotation_sent",
+        deliveryStatus: "pending",
+        invoiceStatus: "pending",
     },
     orderLines: [
         {
@@ -110,6 +133,8 @@ const FALLBACK_RENTAL_LIST: RentalFormData[] = [
         rentalPeriod: "Monthly",
         rentalDuration: "6 months",
         status: "quotation_sent",
+        deliveryStatus: "pending",
+        invoiceStatus: "pending",
     },
     {
         id: "R0002",
@@ -123,6 +148,8 @@ const FALLBACK_RENTAL_LIST: RentalFormData[] = [
         rentalPeriod: "Weekly",
         rentalDuration: "12 weeks",
         status: "confirmed",
+        deliveryStatus: "pickup_ready",
+        invoiceStatus: "created",
     },
     {
         id: "R0003",
@@ -136,6 +163,8 @@ const FALLBACK_RENTAL_LIST: RentalFormData[] = [
         rentalPeriod: "Daily",
         rentalDuration: "30 days",
         status: "draft",
+        deliveryStatus: "pending",
+        invoiceStatus: "pending",
     },
     {
         id: "R0004",
@@ -149,6 +178,8 @@ const FALLBACK_RENTAL_LIST: RentalFormData[] = [
         rentalPeriod: "Quarterly",
         rentalDuration: "2 years",
         status: "confirmed",
+        deliveryStatus: "delivered",
+        invoiceStatus: "paid",
     },
     {
         id: "R0005",
@@ -162,6 +193,8 @@ const FALLBACK_RENTAL_LIST: RentalFormData[] = [
         rentalPeriod: "Monthly",
         rentalDuration: "3 months",
         status: "cancelled",
+        deliveryStatus: "pending",
+        invoiceStatus: "pending",
     },
 ];
 
@@ -341,5 +374,98 @@ export const deleteOrderLine = async (
             error,
         );
         // Simulate successful deletion (no-op in fallback)
+    }
+};
+
+// New API functions for enhanced features
+
+export const createDeliveryOrders = async (
+    rentalId: string,
+): Promise<{ pickup: DeliveryOrder; return: DeliveryOrder }> => {
+    try {
+        const response = await apiClient.post(
+            `/rentals/${rentalId}/delivery-orders`,
+        );
+        return response.data as {
+            pickup: DeliveryOrder;
+            return: DeliveryOrder;
+        };
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for creating delivery orders for rental ${rentalId}, using fallback behavior:`,
+            error,
+        );
+        // Return fallback delivery orders
+        const pickup: DeliveryOrder = {
+            id: `pickup-${Date.now()}`,
+            rentalId,
+            type: "pickup",
+            status: "pending",
+            scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0], // tomorrow
+            address: FALLBACK_RENTAL_DATA.rental.deliveryAddress,
+            notes: "Pickup delivery order created automatically",
+        };
+
+        const returnOrder: DeliveryOrder = {
+            id: `return-${Date.now()}`,
+            rentalId,
+            type: "return",
+            status: "pending",
+            scheduledDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0], // 30 days later
+            address: FALLBACK_RENTAL_DATA.rental.deliveryAddress,
+            notes: "Return delivery order created automatically",
+        };
+
+        return { pickup, return: returnOrder };
+    }
+};
+
+export const createInvoice = async (rentalId: string): Promise<Invoice> => {
+    try {
+        const response = await apiClient.post(`/rentals/${rentalId}/invoice`);
+        return response.data as Invoice;
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for creating invoice for rental ${rentalId}, using fallback behavior:`,
+            error,
+        );
+        // Calculate total from order lines
+        const total = FALLBACK_RENTAL_DATA.orderLines.reduce(
+            (sum, line) => sum + line.subTotal,
+            0,
+        );
+
+        return {
+            id: `INV-${Date.now()}`,
+            rentalId,
+            amount: total,
+            status: "draft",
+            createdDate: new Date().toISOString().split("T")[0],
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+        };
+    }
+};
+
+export const redirectToPickupTransfer = async (
+    rentalId: string,
+): Promise<string> => {
+    try {
+        const response = await apiClient.get(
+            `/rentals/${rentalId}/pickup-transfer-url`,
+        );
+        return (response.data as { url: string }).url;
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for pickup transfer redirect for rental ${rentalId}, using fallback behavior:`,
+            error,
+        );
+        // Return fallback URL
+        return `/admin/transfers/pickup?rental=${rentalId}`;
     }
 };
