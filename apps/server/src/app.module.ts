@@ -15,7 +15,7 @@ import { OrdersModule } from "./orders/orders.module";
 import { AttachmentsModule } from "./attachments/attachments.module";
 import { QuotationsModule } from "./quotations/quotations.module";
 import { AssociationsModule } from "./associations/associations.module";
-
+import { DashboardModule } from "./dashboard/dashboard.module";
 @Module({
     imports: [
         SequelizeModule.forRoot({
@@ -45,6 +45,7 @@ import { AssociationsModule } from "./associations/associations.module";
         OrdersModule,
         AttachmentsModule,
         QuotationsModule,
+        DashboardModule,
     ],
     controllers: [AppController],
     providers: [
