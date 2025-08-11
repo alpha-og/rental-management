@@ -1,6 +1,5 @@
 import {
     AllowNull,
-    BelongsTo,
     Column,
     DataType,
     Default,
@@ -12,7 +11,7 @@ import {
     Table,
 } from "sequelize-typescript";
 import { Quotation } from "../quotations/quotation.model";
-import { Product } from "src/products/products.model";
+
 import { Contract } from "src/contracts/contract.model";
 
 interface OrderAttributes {
@@ -21,6 +20,8 @@ interface OrderAttributes {
     deliveryAddress: string;
     endUserConfirmation: boolean;
     customerConfirmation: boolean;
+    status: "pending" | "confirmed" | "cancelled";
+    quotation?: Quotation[];
 }
 
 type OrderCreationAttributes = Omit<OrderAttributes, "id">;
@@ -32,16 +33,6 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> {
     @Column(DataType.UUID)
     declare id: string;
 
-    @ForeignKey(() => Product)
-    @AllowNull(false)
-    @Column(DataType.UUID)
-    declare productId: string;
-
-    @BelongsTo(() => Product, {
-        as: "product",
-        foreignKey: { name: "productId", allowNull: false },
-        onDelete: "CASCADE",
-    })
     @ForeignKey(() => Quotation)
     @AllowNull(false)
     @Column(DataType.UUID)
@@ -63,6 +54,10 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> {
     @AllowNull(false)
     @Column(DataType.STRING)
     declare deliveryAddress: string;
+
+    @AllowNull(false)
+    @Column(DataType.ENUM("pending", "confirmed", "cancelled"))
+    declare status: "pending" | "confirmed" | "cancelled";
 
     @AllowNull(false)
     @Default(false)

@@ -20,6 +20,8 @@ export class CreateOrderDto {
 
     @IsBoolean()
     customerConfirmation!: boolean;
+
+    status: "pending" | "confirmed" | "cancelled" = "pending";
 }
 
 export class UpdateOrderDto {
