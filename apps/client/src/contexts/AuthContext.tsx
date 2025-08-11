@@ -50,8 +50,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             // Check if we have a stored token
             const token = localStorage.getItem("accessToken");
+
+            // Development mode: provide mock user for admin pages if no token
+            const isDevelopment = process.env.NODE_ENV === "development";
+            const isAdminRoute = pathname?.startsWith("/admin");
+
             if (!token) {
-                setUser(null);
+                if (isDevelopment && isAdminRoute) {
+                    // Provide mock user for admin development
+                    setUser({
+                        id: "dev-admin-id",
+                        name: "Admin User (Dev)",
+                        email: "admin@dev.local",
+                        role: "admin",
+                    });
+                    console.info(
+                        "🔧 Development mode: Using mock admin user for admin routes",
+                    );
+                } else {
+                    setUser(null);
+                }
                 setLoading(false);
                 return;
             }
@@ -85,8 +103,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!loading) {
             const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+            const isDevelopment = process.env.NODE_ENV === "development";
+            const isAdminRoute = pathname?.startsWith("/admin");
 
             if (!user && !isPublicRoute) {
+                // In development mode, don't redirect admin routes (mock user will be provided)
+                if (isDevelopment && isAdminRoute) {
+                    return;
+                }
                 // User is not authenticated and trying to access protected route
                 router.push("/login");
             } else if (
