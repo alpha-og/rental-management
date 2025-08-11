@@ -4,6 +4,22 @@ Problem Statement: Rental Management
 
 Rental application streamlines the entire rental process. It provides a unified platform to manage products, schedule pickups. Online booking and reservations are done through a website portal, Customers can shop available products, reserve their selected dates, and checkout right on the website. Whether you rent by the hour, week, month or year, create customized pricing for every product based on different time frames
 
+## Team
+
+- Team Members:
+    - Shravan Nander Pandala (Team Lead)
+    - Pranav S
+    - Karthik Krishna
+    - Athul Anoop
+
+## Technologies
+
+- Frontend: NextJS, TailwindCSS, Shadcn UI
+- Backend: NestJS, PostgreSQL
+- CI/CD: GitHub Actions
+- Containerization: Docker
+- Hosting: Google Cloud Platform (VM Instance)
+
 ## Getting Started
 
 ### Prerequisites
