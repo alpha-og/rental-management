@@ -11,7 +11,9 @@ import {
 
 interface UserAttributes {
     id: string;
-    username: string;
+    name: string;
+    email: string;
+    phone: string;
     passwordHash: string;
     refreshToken?: string;
 }
@@ -19,7 +21,6 @@ interface UserAttributes {
 type UserCreationAttributes = Omit<UserAttributes, "id">;
 
 @Table({
-    tableName: "users",
     timestamps: true,
 })
 export class User extends Model<UserAttributes, UserCreationAttributes> {
@@ -31,7 +32,17 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     @Unique
     @AllowNull(false)
     @Column(DataType.STRING)
-    declare username: string;
+    declare name: string;
+
+    @Unique
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare email: string;
+
+    @Unique
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare phone: string;
 
     @Column({
         type: DataType.STRING,

@@ -21,16 +21,13 @@ export class UserService {
 
     async create(userData: CreateUserDto): Promise<User> {
         try {
-            if (!userData.username || !userData.password) {
-                throw new Error("Username and password are required");
-            }
             const hashedPassword: string = await bcrypt.hash(
                 userData.password,
                 10,
             );
 
             return this.userModel.create({
-                username: userData.username,
+                ...userData,
                 passwordHash: hashedPassword,
             });
         } catch (error) {
@@ -56,9 +53,9 @@ export class UserService {
             await user.destroy();
         }
     }
-    async findByUsername(username: string): Promise<User | null> {
+    async findByEmail(email: string): Promise<User | null> {
         return this.userModel.findOne({
-            where: { username },
+            where: { email },
         });
     }
     async setRefreshToken(
