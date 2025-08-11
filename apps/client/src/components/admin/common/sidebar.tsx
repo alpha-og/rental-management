@@ -144,21 +144,29 @@ const Sidebar: React.FC<SidebarProps> = ({
         externalMobileOpen !== undefined
             ? externalMobileOpen
             : internalMobileOpen;
-    const setIsMobileOpen = onMobileToggle || setInternalMobileOpen;
 
     // Check if screen is mobile
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-            if (window.innerWidth >= 768 && onMobileToggle) {
-                onMobileToggle();
-            }
+            const isNowMobile = window.innerWidth < 768;
+            setIsMobile((prev) => {
+                // Only close mobile menu if transitioning from mobile to desktop AND menu is open
+                if (
+                    prev &&
+                    !isNowMobile &&
+                    externalMobileOpen &&
+                    onMobileToggle
+                ) {
+                    onMobileToggle();
+                }
+                return isNowMobile;
+            });
         };
 
         checkMobile();
         window.addEventListener("resize", checkMobile);
         return () => window.removeEventListener("resize", checkMobile);
-    }, [onMobileToggle]);
+    }, [externalMobileOpen, onMobileToggle]);
 
     // Handle escape key to close mobile sidebar
     useEffect(() => {
@@ -187,8 +195,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const handleItemClick = (itemId: string) => {
         onTabChange?.(itemId);
-        if (isMobile) {
-            setIsMobileOpen(false);
+        if (isMobile && isMobileOpen) {
+            if (onMobileToggle) {
+                onMobileToggle();
+            } else {
+                setInternalMobileOpen(false);
+            }
         }
     };
 
@@ -248,7 +260,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {/* Mobile close button */}
                 {isMobile && (
                     <button
-                        onClick={() => setIsMobileOpen(false)}
+                        onClick={() => {
+                            if (onMobileToggle) {
+                                onMobileToggle();
+                            } else {
+                                setInternalMobileOpen(false);
+                            }
+                        }}
                         className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
                     >
                         <X className="h-5 w-5 text-gray-500" />
@@ -318,7 +336,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             {isMobile && isMobileOpen && (
                 <div
                     className="fixed inset-0 bg-white bg-opacity-10 z-40 md:hidden transition-opacity duration-300"
-                    onClick={() => setIsMobileOpen(false)}
+                    onClick={() => {
+                        if (onMobileToggle) {
+                            onMobileToggle();
+                        } else {
+                            setInternalMobileOpen(false);
+                        }
+                    }}
                 />
             )}
 
