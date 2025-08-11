@@ -1,16 +1,6 @@
-import axios from "axios";
+import axios from "../../../lib/axios";
 
 // API configuration
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// Create axios instance with default config
-const apiClient = axios.create({
-    baseURL: BASE_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
 
 // Types for the dashboard data
 export interface DashboardStats {
@@ -45,13 +35,9 @@ export interface DashboardData {
 }
 
 // API functions - These will make actual HTTP requests to backend endpoints
-export const getDashboardStats = async (
-    period: string = "last-30-days",
-): Promise<DashboardStats> => {
+export const getDashboardStats = async (): Promise<DashboardStats> => {
     try {
-        const response = await apiClient.get(
-            `/dashboard/stats?period=${period}`,
-        );
+        const response = await axios.get(`/dashboard/stats`);
         return response.data as DashboardStats;
     } catch (error: unknown) {
         console.warn(
@@ -67,13 +53,9 @@ export const getDashboardStats = async (
     }
 };
 
-export const getTopProductCategories = async (
-    period: string = "last-30-days",
-): Promise<ProductCategory[]> => {
+export const getTopProductCategories = async (): Promise<ProductCategory[]> => {
     try {
-        const response = await apiClient.get(
-            `/dashboard/product-categories?period=${period}`,
-        );
+        const response = await axios.get(`/dashboard/product-categories`);
         return response.data as ProductCategory[];
     } catch (error: unknown) {
         console.warn(
@@ -85,13 +67,9 @@ export const getTopProductCategories = async (
     }
 };
 
-export const getTopProducts = async (
-    period: string = "last-30-days",
-): Promise<TopProduct[]> => {
+export const getTopProducts = async (): Promise<TopProduct[]> => {
     try {
-        const response = await apiClient.get(
-            `/dashboard/top-products?period=${period}`,
-        );
+        const response = await axios.get(`/dashboard/top-products`);
         return response.data as TopProduct[];
     } catch (error: unknown) {
         console.warn(
@@ -107,13 +85,9 @@ export const getTopProducts = async (
     }
 };
 
-export const getTopCustomers = async (
-    period: string = "last-30-days",
-): Promise<TopCustomer[]> => {
+export const getTopCustomers = async (): Promise<TopCustomer[]> => {
     try {
-        const response = await apiClient.get(
-            `/dashboard/top-customers?period=${period}`,
-        );
+        const response = await axios.get(`/dashboard/top-customers`);
         return response.data as TopCustomer[];
     } catch (error: unknown) {
         console.warn(
@@ -129,16 +103,14 @@ export const getTopCustomers = async (
     }
 };
 
-export const getDashboardData = async (
-    period: string = "last-30-days",
-): Promise<DashboardData> => {
+export const getDashboardData = async (): Promise<DashboardData> => {
     try {
         const [stats, topProductCategories, topProducts, topCustomers] =
             await Promise.all([
-                getDashboardStats(period),
-                getTopProductCategories(period),
-                getTopProducts(period),
-                getTopCustomers(period),
+                getDashboardStats(),
+                getTopProductCategories(),
+                getTopProducts(),
+                getTopCustomers(),
             ]);
 
         return {
