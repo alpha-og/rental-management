@@ -112,7 +112,7 @@ export default function UserPage(): JSX.Element {
                 />
             )}
             <div
-                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 z-40 ${
+                className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-xl transform transition-transform duration-300 z-40 ${
                     isFilterOpen ? "translate-x-0" : "translate-x-full"
                 }`}
             >
