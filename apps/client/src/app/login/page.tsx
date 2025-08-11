@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { login } from "./api";
-import { Button } from "@client/components/login/button";
+import { Button } from "@client/components/ui/button";
 import {
     Card,
     CardContent,
