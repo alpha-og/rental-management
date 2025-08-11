@@ -1,16 +1,12 @@
 import {
     AllowNull,
-    BelongsTo,
     Column,
     DataType,
     Default,
-    ForeignKey,
     Model,
     PrimaryKey,
     Table,
 } from "sequelize-typescript";
-import { Quotation } from "../quotations/quotation.model";
-import { Order } from "src/orders/order.model";
 
 interface ContractAttributes {
     id: string;
@@ -31,16 +27,6 @@ export class Contract extends Model<
     @Column(DataType.UUID)
     declare id: string;
 
-    @ForeignKey(() => Quotation)
-    @AllowNull(false)
-    @Column(DataType.UUID)
-    declare quotationId: string;
-
-    @BelongsTo(() => Order, {
-        as: "order",
-        foreignKey: { name: "orderId", allowNull: false },
-        onDelete: "CASCADE",
-    })
     @AllowNull(false)
     @Column(DataType.STRING)
     declare rentalPeriod: string;
@@ -48,4 +34,7 @@ export class Contract extends Model<
     @AllowNull(false)
     @Column(DataType.DATE)
     declare startDate: Date;
+
+    @Column(DataType.UUID)
+    declare orderId: string;
 }

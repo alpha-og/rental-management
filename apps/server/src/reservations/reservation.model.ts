@@ -1,16 +1,12 @@
 import {
     AllowNull,
-    BelongsTo,
     Column,
     DataType,
     Default,
-    ForeignKey,
     Model,
     PrimaryKey,
     Table,
 } from "sequelize-typescript";
-import { Order } from "../orders/order.model";
-import { Product } from "../products/products.model";
 
 interface ReservationAttributes {
     id: string;
@@ -30,28 +26,11 @@ export class Reservation extends Model<
     @Column(DataType.UUID)
     declare id: string;
 
-    @ForeignKey(() => Order)
-    @AllowNull(false)
-    @Column(DataType.UUID)
-    declare orderId: string;
-
-    @ForeignKey(() => Product)
-    @AllowNull(false)
-    @Column(DataType.UUID)
-    declare productId: string;
-
-    @BelongsTo(() => Order)
-    declare order?: Order;
-
-    // @BelongsTo(() => Product, {
-    //     as: "product",
-    //     foreignKey: { name: "productId", allowNull: false },
-    //     onDelete: "CASCADE",
-    // })
-    // declare product?: Product;
-
     @AllowNull(false)
     @Default(true)
     @Column(DataType.BOOLEAN)
     declare isValid: boolean;
+
+    @Column(DataType.UUID)
+    declare productId: string;
 }

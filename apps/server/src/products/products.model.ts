@@ -6,13 +6,7 @@ import {
     DataType,
     Default,
     AllowNull,
-    HasMany,
-    BelongsToMany,
 } from "sequelize-typescript";
-import { Rate } from "src/rates/rate.model";
-import { Attachment } from "src/attachments/attachment.model";
-import { Reservation } from "src/reservations/reservation.model";
-import { Quotation } from "src/quotations/quotation.model";
 
 interface ProductAttributes {
     id: string;
@@ -83,18 +77,4 @@ export class Product extends Model<
 
     @Column(DataType.STRING)
     declare imageUrl: string;
-
-    @HasMany(() => Rate)
-    declare rates: Rate[];
-
-    @HasMany(() => Attachment)
-    declare attachments: Attachment[];
-
-    @HasMany(() => Reservation)
-    declare reservations: Reservation[];
-
-    @BelongsToMany(() => Quotation, {
-        through: "productQuotation",
-    })
-    declare quotations: Quotation[];
 }

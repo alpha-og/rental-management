@@ -1,17 +1,12 @@
 import {
     AllowNull,
-    BelongsTo,
-    BelongsToMany,
     Column,
     DataType,
     Default,
-    ForeignKey,
     Model,
     PrimaryKey,
     Table,
 } from "sequelize-typescript";
-import { Product } from "../products/products.model";
-import { Quotation } from "src/quotations/quotation.model";
 
 export enum RateDuration {
     HOURLY = "HOURLY",
@@ -37,11 +32,6 @@ export class Rate extends Model<RateAttributes, RateCreationAttributes> {
     @Column(DataType.UUID)
     declare id: string;
 
-    @ForeignKey(() => Product)
-    @AllowNull(false)
-    @Column(DataType.UUID)
-    declare productId: string;
-
     @AllowNull(false)
     @Column(DataType.ENUM(...Object.values(RateDuration)))
     declare duration: RateDuration;
@@ -55,9 +45,6 @@ export class Rate extends Model<RateAttributes, RateCreationAttributes> {
     @Column(DataType.BOOLEAN)
     declare isExtra: boolean;
 
-    @BelongsTo(() => Product)
-    declare product: Product;
-
-    @BelongsToMany(() => Quotation, { through: "quotationRates" })
-    declare quotations: Quotation[];
+    @Column(DataType.UUID)
+    declare productId: string;
 }
