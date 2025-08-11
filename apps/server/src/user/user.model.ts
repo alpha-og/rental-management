@@ -11,29 +11,38 @@ import {
 
 interface UserAttributes {
     id: string;
-    username: string;
+    name: string;
+    email: string;
+    phone: string;
     passwordHash: string;
     refreshToken?: string;
 }
 
-// ✅ Add creation interface (excludes auto-generated fields)
-// interface UserCreationAttributes extends Omit<UserAttributes, 'id'> {}
 type UserCreationAttributes = Omit<UserAttributes, "id">;
 
 @Table({
-    tableName: "users", // ✅ Explicit table name
-    timestamps: true, // ✅ Adds createdAt/updatedAt
+    timestamps: true,
 })
 export class User extends Model<UserAttributes, UserCreationAttributes> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID) // ✅ Simplified - no redundant options
+    @Column(DataType.UUID)
     declare id: string;
 
     @Unique
     @AllowNull(false)
     @Column(DataType.STRING)
-    declare username: string;
+    declare name: string;
+
+    @Unique
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare email: string;
+
+    @Unique
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare phone: string;
 
     @Column({
         type: DataType.STRING,
@@ -42,7 +51,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     declare passwordHash: string;
 
     @Column({
-        type: DataType.TEXT, // ✅ Changed to TEXT for longer tokens
+        type: DataType.TEXT,
         allowNull: true,
     })
     declare refreshToken?: string;

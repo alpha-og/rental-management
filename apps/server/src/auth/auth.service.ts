@@ -25,8 +25,8 @@ export class AuthService {
         private configService: ConfigService,
     ) {}
 
-    async validateUser(username: string, pass: string): Promise<User | null> {
-        const user = await this.userService.findByUsername(username);
+    async validateUser(email: string, pass: string): Promise<User | null> {
+        const user = await this.userService.findByEmail(email);
         if (!user) {
             throw new UnauthorizedException("User not found");
         }
@@ -39,7 +39,7 @@ export class AuthService {
 
     async login(loginDto: LoginDto): Promise<AuthResponse> {
         const validatedUser = await this.validateUser(
-            loginDto.username,
+            loginDto.email,
             loginDto.password,
         );
         if (!validatedUser) {
@@ -65,18 +65,10 @@ export class AuthService {
     }
 
     async register(userDto: CreateUserDto): Promise<AuthResponse> {
-        const existingUser = await this.userService.findByUsername(
-            userDto.username,
-        );
+        const existingUser = await this.userService.findByEmail(userDto.email);
         if (existingUser) {
             throw new UnauthorizedException("Username already exists");
         }
-        if (!userDto.username || !userDto.password) {
-            throw new UnauthorizedException(
-                "Username and password are required",
-            );
-        }
-
         const newUser = await this.userService.create(userDto);
         // Generate tokens directly instead of calling login
         const payload: JwtPayload = { sub: newUser.id };
