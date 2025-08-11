@@ -1,6 +1,4 @@
-// components/login/card.tsx
 import * as React from "react";
-
 import { cn } from "@client/lib/utils";
 
 const Card = React.forwardRef<
@@ -25,7 +23,7 @@ const CardHeader = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            "flex flex-col items-center text-center space-y-1.5 p-6", // ⬅ Added items-center + text-center
+            "flex flex-col items-center text-center space-y-1.5 p-6",
             className,
         )}
         {...props}
