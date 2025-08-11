@@ -11,7 +11,10 @@ import {
 interface AttachmentAttributes {
     id: string;
     productId: string;
-    url: string;
+    appwriteFileId: string;
+    fileName: string;
+    fileSize: number;
+    fileUrl: string;
     mimeType?: string;
 }
 
@@ -29,7 +32,23 @@ export class Attachment extends Model<
 
     @AllowNull(false)
     @Column(DataType.STRING)
-    declare url: string;
+    declare appwriteFileId: string;
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare fileName: string;
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare mimeType: string;
+
+    @AllowNull(false)
+    @Column({ type: DataType.INTEGER, defaultValue: 0 })
+    declare fileSize: number;
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare fileUrl: string;
 
     @Column(DataType.UUID)
     declare productId: string;
