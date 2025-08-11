@@ -3,7 +3,6 @@ import { InjectModel } from "@nestjs/sequelize";
 import { Order } from "../orders/order.model";
 import { Quotation } from "../quotations/quotation.model";
 import { Product } from "../products/products.model";
-import { User } from "../user/user.model";
 import { Sequelize } from "sequelize-typescript";
 
 @Injectable()
@@ -12,7 +11,6 @@ export class DashboardService {
         @InjectModel(Order) private orderModel: typeof Order,
         @InjectModel(Quotation) private quotationModel: typeof Quotation,
         @InjectModel(Product) private productModel: typeof Product,
-        @InjectModel(User) private userModel: typeof User,
         private sequelize: Sequelize,
     ) {}
 
@@ -88,7 +86,7 @@ export class DashboardService {
     }
 
     async getTopCustomers() {
-        // Example: group orders by user
+        // Example: group orders by user ID and return user IDs instead of user objects
         return this.orderModel.findAll({
             attributes: [
                 "userId",
@@ -106,7 +104,8 @@ export class DashboardService {
                 [this.sequelize.fn("SUM", this.sequelize.col("price")), "DESC"],
             ],
             limit: 5,
-            include: [{ model: User, attributes: ["name"] }],
+            // Remove the User include since we don't have the association set up
+            // In a real application, you'd want to set up proper associations
         });
     }
 }
