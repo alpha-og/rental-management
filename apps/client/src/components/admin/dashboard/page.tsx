@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { cn } from "@client/lib/utils";
+import { useMobileMenu } from "@client/components/admin/common";
 import {
     getDashboardData,
     type DashboardData,
@@ -134,6 +135,7 @@ export default function AdminDashboard() {
     );
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const { MobileMenuButton } = useMobileMenu();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -225,8 +227,10 @@ export default function AdminDashboard() {
                             Dashboard
                         </h1>
                     </div>
-                    {/* Space reserved for mobile menu button */}
-                    <div className="w-10 md:w-0"></div>
+                    {/* Mobile menu button */}
+                    <div className="md:hidden">
+                        <MobileMenuButton />
+                    </div>
                 </div>
             </header>
 

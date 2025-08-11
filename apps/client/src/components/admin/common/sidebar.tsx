@@ -43,7 +43,11 @@ const sidebarItems: SidebarItem[] = [
         label: "Reporting",
         icon: <BarChart3 className="h-5 w-5" />,
     },
-    { id: "setting", label: "Setting", icon: <Settings className="h-5 w-5" /> },
+    {
+        id: "settings",
+        label: "Settings",
+        icon: <Settings className="h-5 w-5" />,
+    },
 ];
 
 interface SidebarItemComponentProps {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import Sidebar from "./sidebar";
 import MobileMenuButton from "./mobile-menu-button";
 import { cn } from "@client/lib/utils";
@@ -10,6 +10,22 @@ interface AdminLayoutProps {
     defaultActiveTab?: string;
     className?: string;
 }
+
+interface MobileMenuContextType {
+    isMobileMenuOpen: boolean;
+    toggleMobileMenu: () => void;
+    MobileMenuButton: React.ComponentType<{ className?: string }>;
+}
+
+const MobileMenuContext = createContext<MobileMenuContextType | null>(null);
+
+export const useMobileMenu = () => {
+    const context = useContext(MobileMenuContext);
+    if (!context) {
+        throw new Error("useMobileMenu must be used within AdminLayout");
+    }
+    return context;
+};
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({
     children,
@@ -23,30 +39,38 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    return (
-        <div className={cn("min-h-screen bg-gray-50 flex", className)}>
-            <Sidebar
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                isMobileOpen={isMobileMenuOpen}
-                onMobileToggle={toggleMobileMenu}
-            />
+    const MobileMenuButtonComponent: React.FC<{ className?: string }> = ({
+        className: buttonClassName,
+    }) => (
+        <MobileMenuButton
+            isOpen={isMobileMenuOpen}
+            onClick={toggleMobileMenu}
+            className={buttonClassName}
+        />
+    );
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-                {/* Content */}
-                <main className="flex-1 overflow-auto">
-                    {/* Mobile Menu Button - positioned in top right of content area */}
-                    <div className="fixed top-4 right-6 z-30 md:hidden">
-                        <MobileMenuButton
-                            isOpen={isMobileMenuOpen}
-                            onClick={toggleMobileMenu}
-                        />
-                    </div>
-                    {children}
-                </main>
+    const contextValue: MobileMenuContextType = {
+        isMobileMenuOpen,
+        toggleMobileMenu,
+        MobileMenuButton: MobileMenuButtonComponent,
+    };
+
+    return (
+        <MobileMenuContext.Provider value={contextValue}>
+            <div className={cn("min-h-screen bg-gray-50 flex", className)}>
+                <Sidebar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    isMobileOpen={isMobileMenuOpen}
+                    onMobileToggle={toggleMobileMenu}
+                />
+
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+                    <main className="flex-1 overflow-auto">{children}</main>
+                </div>
             </div>
-        </div>
+        </MobileMenuContext.Provider>
     );
 };
 
