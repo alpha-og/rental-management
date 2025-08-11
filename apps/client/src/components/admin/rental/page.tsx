@@ -1,5 +1,22 @@
 "use client";
 
+// /api/v1/rentals
+// ├── GET    - List all rentals (with pagination)
+// ├── POST   - Create new rental
+// └── [id]/
+//     ├── GET    - Get single rental with order lines
+//     ├── PUT    - Update rental fields
+//     ├── DELETE - Delete rental
+//     ├── actions/
+//     │   └── POST - Perform actions (send/print/confirm/cancel)
+//     └── order-lines/
+//         ├── GET  - Get order lines for rental
+//         ├── POST - Add new order line
+//         └── [lineId]/
+//             ├── GET    - Get single order line
+//             ├── PUT    - Update order line
+//             └── DELETE - Remove order line
+
 import React, { useState, useEffect } from "react";
 import {
     ChevronLeft,
