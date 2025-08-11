@@ -10,7 +10,7 @@ import {
     CardDescription,
     CardContent,
     CardFooter,
-} from "@client/components/login/card";
+} from "../login/page";
 import { Input } from "@client/components/ui/input";
 import { Label } from "@client/components/ui/label";
 

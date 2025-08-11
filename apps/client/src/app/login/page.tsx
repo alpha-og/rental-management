@@ -10,7 +10,7 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@client/components/login/card";
+} from "@client/components/login/page";
 import { Input } from "@client/components/ui/input";
 import { Label } from "@client/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
