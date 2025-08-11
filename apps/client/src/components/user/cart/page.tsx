@@ -6,7 +6,7 @@ import { Footer } from "@client/components/ui/footer";
 const CartPage = () => {
     return (
         <div className="flex flex-col min-h-screen">
-            <Navbar hideAuth={true} />
+            <Navbar hideAuthButtons={true} />
             <main className="flex-grow">
                 <CartDisplay />
             </main>
