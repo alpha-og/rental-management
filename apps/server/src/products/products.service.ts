@@ -26,7 +26,7 @@ export class ProductService {
 
             return this.productModel.create({
                 name: productData.name,
-                description: productData.description,
+                description: productData.description ?? "",
                 price: productData.price,
                 quantity: productData.quantity,
             });
