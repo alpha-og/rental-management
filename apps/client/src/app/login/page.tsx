@@ -21,6 +21,11 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
+    const handleForgotPassword = () => {
+        // TODO: Implement forgot password functionality
+        alert("Forgot password functionality will be implemented soon!");
+    };
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);
@@ -77,12 +82,13 @@ export default function LoginPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="password">Password</Label>
-                                    <a
-                                        href="#"
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPassword}
                                         className="text-sm text-blue-500 hover:underline"
                                     >
                                         Forgot password?
-                                    </a>
+                                    </button>
                                 </div>
                                 <div className="relative">
                                     <Input
@@ -130,6 +136,15 @@ export default function LoginPage() {
                             >
                                 {loading ? "Logging in..." : "Login"}
                             </Button>
+                            <div className="text-center text-sm text-gray-600">
+                                Don't have an account?{" "}
+                                <a
+                                    href="/register"
+                                    className="text-blue-500 hover:underline font-medium"
+                                >
+                                    Register here
+                                </a>
+                            </div>
                         </div>
                     </CardFooter>
                 </form>
