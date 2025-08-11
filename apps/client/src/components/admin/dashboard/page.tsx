@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-    Search,
-    ChevronDown,
-    Info,
-    FileText,
-    Package,
-    BarChart3,
-    X,
-} from "lucide-react";
+import { Search, Info, FileText, Package, BarChart3, X } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { cn } from "@client/lib/utils";
 import {
@@ -110,35 +102,6 @@ const Table: React.FC<TableProps> = ({ title, data, columns, className }) => (
     </div>
 );
 
-const PeriodSelector: React.FC<{
-    value: string;
-    onChange: (value: string) => void;
-}> = ({ value, onChange }) => {
-    const periods = [
-        { value: "last-7-days", label: "Last 7 days" },
-        { value: "last-30-days", label: "Last 30 days" },
-        { value: "last-90-days", label: "Last 90 days" },
-        { value: "last-year", label: "Last year" },
-    ];
-
-    return (
-        <div className="relative w-full sm:w-auto">
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto min-w-[160px]"
-            >
-                {periods.map((period) => (
-                    <option key={period.value} value={period.value}>
-                        {period.label}
-                    </option>
-                ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        </div>
-    );
-};
-
 const fallbackDashboardData: DashboardData = {
     stats: {
         quotations: 12,
@@ -163,7 +126,6 @@ const fallbackDashboardData: DashboardData = {
 };
 
 export default function AdminDashboard() {
-    const [selectedPeriod, setSelectedPeriod] = useState("last-30-days");
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(
         null,
     );
@@ -175,11 +137,9 @@ export default function AdminDashboard() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                console.log(
-                    `Fetching dashboard data for period: ${selectedPeriod}`,
-                );
+                console.log(`Fetching dashboard data `);
                 // Fetch dashboard stats
-                const data = await getDashboardData(selectedPeriod);
+                const data = await getDashboardData();
                 setDashboardData(data);
             } catch (err) {
                 console.error("Failed to fetch dashboard data:", err);
@@ -191,7 +151,7 @@ export default function AdminDashboard() {
         };
 
         void fetchData();
-    }, [selectedPeriod]);
+    }, []);
 
     if (loading) {
         return (
@@ -308,12 +268,6 @@ export default function AdminDashboard() {
                                 </button>
                             )}
                         </div>
-                    </div>
-                    <div className="w-full sm:w-auto">
-                        <PeriodSelector
-                            value={selectedPeriod}
-                            onChange={setSelectedPeriod}
-                        />
                     </div>
                 </div>
 
