@@ -8,8 +8,20 @@ const PORT = process.env.PORT ?? 4000;
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Define api route prefix
     app.setGlobalPrefix("api/v1");
+
+    // Enable CORS
+    app.enableCors({
+        // temporarily hardcoded origins
+        origin: ["http://localhost:3000", "http:35.222.216.48"],
+    });
+
+    // Enable cookie parser
     app.use(cookieParser());
+
+    // Enable validation pipe
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
