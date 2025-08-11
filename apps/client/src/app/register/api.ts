@@ -1,15 +1,15 @@
-import { api } from "../login/api";
+import axiosInstance from "@client/lib/axios";
 
 export interface RegisterRequestBody {
+    name: string;
     email: string;
+    phone: string;
     password: string;
     confirmPassword: string;
 }
 
 export interface RegisterSuccessResponse {
-    user?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    message?: string;
-    [key: string]: unknown;
+    accessToken: string;
 }
 
 export async function register(
@@ -20,7 +20,7 @@ export async function register(
         throw new Error("Passwords do not match");
     }
     try {
-        const { data } = await api.post<RegisterSuccessResponse>(
+        const { data } = await axiosInstance.post<RegisterSuccessResponse>(
             "/api/v1/auth/register",
             payload,
         );

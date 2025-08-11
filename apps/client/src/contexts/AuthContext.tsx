@@ -27,9 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const PUBLIC_ROUTES = ["/login", "/signup", "/"];
 
 interface AuthResponse {
-    ok: boolean;
-    data: User;
-    accessToken?: string;
+    accessToken: string;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -48,30 +46,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthLogoutCallback(handleAuthLogout);
     }, [router]);
 
-    const checkAuth = async () => {
+    const checkAuth = () => {
         try {
-            const response = await axiosInstance.get<AuthResponse>(
-                "https://server.pgbee.in/auth/login",
-                {
-                    withCredentials: true,
-                },
-            );
-
-            if (response.data.ok) {
-                setUser(response.data.data);
-            } else {
+            // Check if we have a stored token
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
                 setUser(null);
+                setLoading(false);
+                return;
             }
+
+            // For now, we'll just check if the token exists
+            // You should replace this with an actual /auth/me endpoint call when available
+            // const response = await axiosInstance.get('/api/v1/auth/me');
+            // setUser(response.data);
+
+            // Temporary: assume user is valid if token exists
+            setUser({
+                id: "temp-user-id",
+                name: "Adam",
+                email: "adam@example.com",
+                role: "admin",
+            });
         } catch (error) {
             console.log("Auth check failed:", error);
             setUser(null);
+            localStorage.removeItem("accessToken");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        void checkAuth();
+        checkAuth();
     }, []);
 
     // Redirect logic
@@ -94,29 +101,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
             const response = await axiosInstance.post<AuthResponse>(
-                "https://server.pgbee.in/auth/login",
+                "/api/v1/auth/login",
                 {
                     email,
                     password,
                 },
-                {
-                    withCredentials: true,
-                },
             );
 
-            if (response.data.ok) {
-                setUser(response.data.data);
+            if (response.data.accessToken) {
+                localStorage.setItem("accessToken", response.data.accessToken);
 
-                // Store token if available
-                if (response.data.accessToken) {
-                    localStorage.setItem(
-                        "accessToken",
-                        response.data.accessToken,
-                    );
-                }
+                // Set user data - you might want to fetch this from another endpoint
+                setUser({
+                    id: "temp-user-id",
+                    name: "Adam",
+                    email: email,
+                    role: "admin",
+                });
 
                 return true;
             } else {
@@ -130,13 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await axiosInstance.post(
-                "https://server.pgbee.in/auth/logout",
-                {},
-                {
-                    withCredentials: true,
-                },
-            );
+            await axiosInstance.get("/api/v1/auth/logout");
         } catch (error) {
             console.error("Logout error:", error);
         } finally {

@@ -24,17 +24,23 @@ export default function RegisterPage() {
         setError(null);
         setSuccess(false);
         const formData = new FormData(e.currentTarget);
+        const rawName = formData.get("name");
         const rawEmail = formData.get("email");
+        const rawPhone = formData.get("phone");
         const rawPassword = formData.get("password");
         const rawConfirm = formData.get("confirmPassword");
+
+        const name = typeof rawName === "string" ? rawName.trim() : "";
         const email = typeof rawEmail === "string" ? rawEmail.trim() : "";
+        const phone = typeof rawPhone === "string" ? rawPhone.trim() : "";
         const password = typeof rawPassword === "string" ? rawPassword : "";
         const confirmPassword =
             typeof rawConfirm === "string" ? rawConfirm : "";
-        if (!email || !password || !confirmPassword) return;
+
+        if (!name || !email || !phone || !password || !confirmPassword) return;
         setLoading(true);
         try {
-            await register({ email, password, confirmPassword });
+            await register({ name, email, phone, password, confirmPassword });
             setSuccess(true);
             e.currentTarget.reset();
         } catch (err) {
@@ -67,12 +73,32 @@ export default function RegisterPage() {
                     <CardContent>
                         <div className="space-y-4">
                             <div className="space-y-2">
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    type="text"
+                                    placeholder="John Doe"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
                                     name="email"
                                     type="email"
                                     placeholder="m@example.com"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="phone">Phone Number</Label>
+                                <Input
+                                    id="phone"
+                                    name="phone"
+                                    type="tel"
+                                    placeholder="1234567890"
                                     required
                                 />
                             </div>

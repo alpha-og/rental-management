@@ -1,16 +1,5 @@
-import axios, { AxiosError } from "axios";
-
-// Adjustable base URL: if NEXT_PUBLIC_API_BASE is defined use it, otherwise default to same-origin
-const baseURL = process.env.NEXT_PUBLIC_API_BASE || "";
-
-export const api = axios.create({
-    baseURL,
-    withCredentials: true, // allow cookies for auth session
-    headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-    },
-});
+import axiosInstance from "@client/lib/axios";
+import { AxiosError } from "axios";
 
 export interface LoginRequestBody {
     email: string;
@@ -18,11 +7,7 @@ export interface LoginRequestBody {
 }
 
 export interface LoginSuccessResponse {
-    // adjust types once backend shape is known
-    accessToken?: string;
-    refreshToken?: string;
-    user?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    [key: string]: unknown;
+    accessToken: string;
 }
 
 export interface ApiErrorShape {
@@ -36,43 +21,36 @@ export async function login(
     body: LoginRequestBody,
 ): Promise<LoginSuccessResponse> {
     try {
-        const { data } = await api.post<LoginSuccessResponse>(
+        const { data } = await axiosInstance.post<LoginSuccessResponse>(
             "/api/v1/auth/login",
             body,
         );
         return data;
-    } catch (err) {
-        throw toApiError(err);
+    } catch (e) {
+        if (e instanceof AxiosError && e.response?.data) {
+            const errorData = e.response.data as ApiErrorShape;
+            throw new Error(
+                Array.isArray(errorData.message)
+                    ? errorData.message.join(", ")
+                    : errorData.message || "Login failed",
+            );
+        }
+        throw new Error("Login failed");
     }
 }
 
 export async function logout(): Promise<void> {
     try {
-        await api.post("/api/v1/auth/logout");
-    } catch (err) {
-        throw toApiError(err);
+        await axiosInstance.get("/api/v1/auth/logout");
+    } catch (e) {
+        if (e instanceof AxiosError && e.response?.data) {
+            const errorData = e.response.data as ApiErrorShape;
+            throw new Error(
+                Array.isArray(errorData.message)
+                    ? errorData.message.join(", ")
+                    : errorData.message || "Logout failed",
+            );
+        }
+        throw new Error("Logout failed");
     }
-}
-
-function toApiError(err: unknown): Error {
-    if (axios.isAxiosError(err)) {
-        const apiErr = buildErrorFromAxios(err);
-        return apiErr;
-    }
-    return new Error("Unknown error");
-}
-
-function buildErrorFromAxios(err: AxiosError): Error {
-    const statusCode = err.response?.status;
-    const data: unknown = err.response?.data;
-    if (data && typeof data === "object") {
-        const message = (data as { message?: unknown }).message;
-        return new Error(
-            typeof message === "string" && message.length > 0
-                ? message
-                : err.message ||
-                  `Request failed${statusCode ? ` (${statusCode})` : ""}`,
-        );
-    }
-    return new Error(err.message || "Request failed");
 }

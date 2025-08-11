@@ -13,6 +13,7 @@ import {
     LogOut,
 } from "lucide-react";
 import { cn } from "@client/lib/utils";
+import { useAuth } from "@client/contexts/AuthContext";
 
 interface SidebarItem {
     id: string;
@@ -92,6 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [internalMobileOpen, setInternalMobileOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const { logout, user } = useAuth();
 
     // Use external mobile state if provided, otherwise use internal state
     const isMobileOpen =
@@ -162,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                         <div className="flex-1 min-w-0">
                             <h1 className="text-lg font-semibold text-gray-900 truncate">
-                                Hello, Adam!
+                                Hello, {user?.name || "User"}!
                             </h1>
                         </div>
                     </>
@@ -231,17 +233,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {(!isCollapsed || isMobile) && (
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
-                                Adam
+                                {user?.name || "User"}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                                Administrator
+                                {user?.role || "Administrator"}
                             </p>
                         </div>
                     )}
                 </div>
 
                 {(!isCollapsed || isMobile) && (
-                    <button className="w-full mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1">
+                    <button
+                        onClick={logout}
+                        className="w-full mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                    >
                         <LogOut className="h-4 w-4" />
                         <span>Sign out</span>
                     </button>

@@ -80,11 +80,10 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
             try {
                 const res = await axios.post<TokenRefreshResponse>(
-                    "/auth/token/refresh",
+                    "/api/v1/auth/refresh",
                     {},
                     {
                         baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-                        withCredentials: true,
                     },
                 );
 
