@@ -1,15 +1,10 @@
 import type { NextConfig } from "next";
-// import path from "path";
 
 const nextConfig: NextConfig = {
+    // Remove the rewrite that was interfering with backend API calls
     // eslint-disable-next-line @typescript-eslint/require-await
     async rewrites() {
-        return [
-            {
-                source: "/api/v1",
-                destination: "/",
-            },
-        ];
+        return [];
     },
     // output: "standalone",
     // outputFileTracingRoot: path.join(__dirname, "../../"),

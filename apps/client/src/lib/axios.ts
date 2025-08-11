@@ -43,6 +43,9 @@ const axiosInstance = axios.create({
     },
 });
 
+// Debug logging
+console.log("Axios base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
 // Add token to every request
 axiosInstance.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
