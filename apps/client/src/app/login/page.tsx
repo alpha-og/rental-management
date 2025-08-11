@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@client/components/ui/button";
+import { login } from "./api";
+import { Button } from "@client/components/login/button";
 import {
     Card,
     CardContent,
@@ -16,19 +17,43 @@ import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setError(null);
+        setSuccess(false);
         const formData = new FormData(event.currentTarget);
-        const email = formData.get("email");
-        const password = formData.get("password");
-        console.log({ email, password });
+        const rawEmail = formData.get("email");
+        const rawPassword = formData.get("password");
+        const email = typeof rawEmail === "string" ? rawEmail.trim() : "";
+        const password = typeof rawPassword === "string" ? rawPassword : "";
+        if (!email || !password) return;
+        setLoading(true);
+        try {
+            await login({ email, password });
+            setSuccess(true);
+        } catch (e) {
+            const message =
+                typeof e === "object" && e && "message" in e
+                    ? (e as { message?: unknown }).message
+                    : "Login failed";
+            setError(String(message));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <Card className="w-full max-w-sm">
-                <form onSubmit={handleSubmit}>
+                <form
+                    onSubmit={(e) => {
+                        void handleSubmit(e);
+                    }}
+                >
                     <CardHeader className="space-y-1">
                         <CardTitle className="text-2xl font-bold">
                             Login
@@ -84,9 +109,28 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">
-                            Login
-                        </Button>
+                        <div className="w-full space-y-2">
+                            {error && (
+                                <p
+                                    className="text-sm text-red-600"
+                                    role="alert"
+                                >
+                                    {error}
+                                </p>
+                            )}
+                            {success && !error && (
+                                <p className="text-sm text-green-600">
+                                    Logged in.
+                                </p>
+                            )}
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading}
+                            >
+                                {loading ? "Logging in..." : "Login"}
+                            </Button>
+                        </div>
                     </CardFooter>
                 </form>
             </Card>
