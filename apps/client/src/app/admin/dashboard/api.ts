@@ -53,7 +53,7 @@ export const getDashboardStats = async (
             `/dashboard/stats?period=${period}`,
         );
         return response.data as DashboardStats;
-    } catch (error) {
+    } catch (error: unknown) {
         console.warn(
             "Backend endpoint not available, using fallback data:",
             error,
@@ -75,7 +75,7 @@ export const getTopProductCategories = async (
             `/dashboard/product-categories?period=${period}`,
         );
         return response.data as ProductCategory[];
-    } catch (error) {
+    } catch (error: unknown) {
         console.warn(
             "Backend endpoint not available, using fallback data:",
             error,
@@ -93,7 +93,7 @@ export const getTopProducts = async (
             `/dashboard/top-products?period=${period}`,
         );
         return response.data as TopProduct[];
-    } catch (error) {
+    } catch (error: unknown) {
         console.warn(
             "Backend endpoint not available, using fallback data:",
             error,
@@ -115,7 +115,7 @@ export const getTopCustomers = async (
             `/dashboard/top-customers?period=${period}`,
         );
         return response.data as TopCustomer[];
-    } catch (error) {
+    } catch (error: unknown) {
         console.warn(
             "Backend endpoint not available, using fallback data:",
             error,
@@ -147,7 +147,7 @@ export const getDashboardData = async (
             topProducts,
             topCustomers,
         };
-    } catch (error) {
+    } catch (error: unknown) {
         console.error("Error fetching dashboard data:", error);
         throw error;
     }
