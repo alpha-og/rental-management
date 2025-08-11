@@ -66,8 +66,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 />
 
                 {/* Main Content Area */}
-                <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-                    <main className="flex-1 overflow-auto">{children}</main>
+                <div className="flex-1 flex flex-col min-w-0 w-full md:w-auto">
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto">
+                        {children}
+                    </main>
                 </div>
             </div>
         </MobileMenuContext.Provider>

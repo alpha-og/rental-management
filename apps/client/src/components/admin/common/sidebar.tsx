@@ -104,27 +104,27 @@ const Sidebar: React.FC<SidebarProps> = ({
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768);
-            if (window.innerWidth >= 768) {
-                setIsMobileOpen(false);
+            if (window.innerWidth >= 768 && onMobileToggle) {
+                onMobileToggle();
             }
         };
 
         checkMobile();
         window.addEventListener("resize", checkMobile);
         return () => window.removeEventListener("resize", checkMobile);
-    }, []);
+    }, [onMobileToggle]);
 
     // Handle escape key to close mobile sidebar
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === "Escape" && isMobileOpen) {
-                setIsMobileOpen(false);
+            if (e.key === "Escape" && isMobileOpen && onMobileToggle) {
+                onMobileToggle();
             }
         };
 
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
-    }, [isMobileOpen]);
+    }, [isMobileOpen, onMobileToggle]);
 
     // Prevent body scroll when mobile sidebar is open
     useEffect(() => {
@@ -273,12 +273,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {sidebarContent}
             </aside>
 
-            {/* Mobile sidebar - opens from right */}
+            {/* Mobile sidebar - opens from left */}
             {isMobile && (
                 <aside
                     className={cn(
-                        "fixed inset-y-0 right-0 z-50 w-64 bg-white border-l border-gray-200 transform transition-transform duration-300 ease-in-out md:hidden h-screen",
-                        isMobileOpen ? "translate-x-0" : "translate-x-full",
+                        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:hidden h-screen",
+                        isMobileOpen ? "translate-x-0" : "-translate-x-full",
                     )}
                 >
                     {sidebarContent}
