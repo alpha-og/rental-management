@@ -15,7 +15,11 @@ async function bootstrap() {
     // Enable CORS
     app.enableCors({
         // temporarily hardcoded origins
-        origin: ["http://localhost:3000", "http://35.222.216.48"],
+        origin: [
+            "http://localhost:3000",
+            "http://35.222.216.48",
+            "http://localhost:3001",
+        ],
         credentials: true,
         allowedHeaders: [
             "Content-Type",
