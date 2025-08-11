@@ -1,6 +1,8 @@
-# Hackathon TS Monorepo Template
+# Rental Management Solution
 
-This is a monorepo template for a TypeScript-based web application. It includes a client-side NextJS application and a server-side NestJS application, with PostgreSQL database through sequelize.
+Problem Statement: Rental Management
+
+Rental application streamlines the entire rental process. It provides a unified platform to manage products, schedule pickups. Online booking and reservations are done through a website portal, Customers can shop available products, reserve their selected dates, and checkout right on the website. Whether you rent by the hour, week, month or year, create customized pricing for every product based on different time frames
 
 ## Getting Started
 

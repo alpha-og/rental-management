@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/client/Dockerfile.dev
-    # image: monorepo-client:dev
+    # image: rental-management-client:dev
     env_file:
       - ./apps/client/.env.dev
     ports:
@@ -27,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/server/Dockerfile.dev
-    # image: monorepo-server:dev
+    # image: rental-management-server:dev
     env_file:
       - ./apps/server/.env.dev
     ports:

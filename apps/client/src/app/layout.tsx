@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Monorepo Template",
-    description:
-        "TS Monorepo Template with Next.js, NestJS, Sequelize, and Postgres, managed by pnpm workspaces.",
+    title: "Rental Management",
+    description: "Renting simplified",
 };
 
 export default function RootLayout({
