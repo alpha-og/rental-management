@@ -8,6 +8,7 @@ import {
     FileText,
     Package,
     BarChart3,
+    X,
 } from "lucide-react";
 import { Input } from "@client/components/ui/input";
 import { cn } from "@client/lib/utils";
@@ -272,8 +273,17 @@ export default function AdminDashboard() {
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 w-full sm:w-72 lg:w-96"
+                                className="pl-10 pr-10 w-full sm:w-72 lg:w-96"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Clear search"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                     <div className="w-full sm:w-auto">
