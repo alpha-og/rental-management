@@ -19,8 +19,7 @@ const CartDisplay = () => {
     const [subtotal, setSubtotal] = useState(0);
     const [tax, setTax] = useState(0);
     const [total, setTotal] = useState(0);
-    const [couponCode, setCouponCode] = useState("");
-    const [discount, setDiscount] = useState(0);
+    const discount = 0;
 
     useEffect(() => {
         const newSubtotal = cartItems.reduce(
@@ -48,17 +47,6 @@ const CartDisplay = () => {
 
     const handleRemoveItem = (id: number) => {
         setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    };
-
-    const handleApplyCoupon = () => {
-        // Mock coupon logic
-        if (couponCode === "DISCOUNT10") {
-            setDiscount(subtotal * 0.1); // 10% discount
-            alert("Coupon applied: 10% off!");
-        } else {
-            setDiscount(0);
-            alert("Invalid coupon code.");
-        }
     };
 
     return (
@@ -156,30 +144,6 @@ const CartDisplay = () => {
                         <div className="flex justify-between font-bold text-lg border-t border-slate-200 pt-2 mt-2 text-slate-900">
                             <span>Total:</span>
                             <span>${total.toFixed(2)}</span>
-                        </div>
-
-                        {/* Coupon Code Section */}
-                        <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-2 text-slate-800">
-                                Coupon Code
-                            </h3>
-                            <div className="flex">
-                                <input
-                                    type="text"
-                                    placeholder="Enter coupon code"
-                                    className="flex-grow border border-slate-200 rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-                                    value={couponCode}
-                                    onChange={(e) =>
-                                        setCouponCode(e.target.value)
-                                    }
-                                />
-                                <button
-                                    onClick={handleApplyCoupon}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 transition-colors"
-                                >
-                                    Apply
-                                </button>
-                            </div>
                         </div>
 
                         <button className="mt-6 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-md hover:from-indigo-700 hover:to-purple-700 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md">
