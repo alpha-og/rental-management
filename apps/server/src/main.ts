@@ -8,6 +8,7 @@ const PORT = process.env.PORT ?? 4000;
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    app.setGlobalPrefix("api/v1");
     app.use(cookieParser());
     app.useGlobalPipes(
         new ValidationPipe({
