@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import axios from "axios";
+import axiosInstance, { setAuthLogoutCallback } from "@client/lib/axios";
+
 interface User {
     id: string;
     name: string | null;
@@ -16,6 +17,7 @@ interface AuthContextType {
     loading: boolean;
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
+    setAuthUser: (user: User | null) => void;
     isAuthenticated: boolean;
 }
 
@@ -27,6 +29,7 @@ const PUBLIC_ROUTES = ["/login", "/signup", "/"];
 interface AuthResponse {
     ok: boolean;
     data: User;
+    accessToken?: string;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -35,9 +38,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    useEffect(() => {
+        // Set up logout callback for axios interceptor
+        const handleAuthLogout = () => {
+            setUser(null);
+            router.push("/login");
+        };
+
+        setAuthLogoutCallback(handleAuthLogout);
+    }, [router]);
+
     const checkAuth = async () => {
         try {
-            const response = await axios.get<AuthResponse>(
+            const response = await axiosInstance.get<AuthResponse>(
                 "https://server.pgbee.in/auth/login",
                 {
                     withCredentials: true,
@@ -83,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            const response = await axios.post<AuthResponse>(
+            const response = await axiosInstance.post<AuthResponse>(
                 "https://server.pgbee.in/auth/login",
                 {
                     email,
@@ -96,6 +109,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (response.data.ok) {
                 setUser(response.data.data);
+
+                // Store token if available
+                if (response.data.accessToken) {
+                    localStorage.setItem(
+                        "accessToken",
+                        response.data.accessToken,
+                    );
+                }
+
                 return true;
             } else {
                 return false;
@@ -108,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await axios.post(
+            await axiosInstance.post(
                 "https://server.pgbee.in/auth/logout",
                 {},
                 {
@@ -119,8 +141,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error("Logout error:", error);
         } finally {
             setUser(null);
+            localStorage.removeItem("accessToken");
             router.push("/login");
         }
+    };
+
+    const setAuthUser = (userData: User | null) => {
+        setUser(userData);
     };
 
     const value = {
@@ -128,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         logout,
+        setAuthUser,
         isAuthenticated: !!user,
     };
 

@@ -14,6 +14,13 @@ interface AuthRequest extends AxiosRequestConfig {
     headers: Record<string, string>;
 }
 
+// Auth state management
+let authLogoutCallback: (() => void) | null = null;
+
+export const setAuthLogoutCallback = (callback: () => void) => {
+    authLogoutCallback = callback;
+};
+
 let isRefreshing = false;
 let queue: QueueItem[] = [];
 
@@ -94,7 +101,12 @@ axiosInstance.interceptors.response.use(
                         : new Error("Authentication failed");
                 processQueue(errorObj, null);
                 localStorage.removeItem("accessToken");
-                // window.location.href = '/auth/login';
+
+                // Notify AuthContext about logout
+                if (authLogoutCallback) {
+                    authLogoutCallback();
+                }
+
                 return Promise.reject(errorObj);
             } finally {
                 isRefreshing = false;
