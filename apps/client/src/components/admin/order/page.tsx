@@ -9,7 +9,6 @@ import {
     List,
     Plus,
     Filter,
-    MoreHorizontal,
     Eye,
     Edit,
     Trash2,
@@ -141,7 +140,7 @@ const OrderCard = ({
                             onDelete(order.id);
                         }}
                     >
-                        <MoreHorizontal className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
             </div>

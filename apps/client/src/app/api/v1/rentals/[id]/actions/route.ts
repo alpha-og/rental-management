@@ -75,10 +75,10 @@ type RentalAction = "send" | "print" | "confirm" | "cancel";
 // POST /api/v1/rentals/[id]/actions - Perform action on rental
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> },
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const { action } = (await request.json()) as { action: string };
 
         // Simulate some processing delay

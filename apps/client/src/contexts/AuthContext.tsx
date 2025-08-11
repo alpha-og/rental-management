@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import axiosInstance, { setAuthLogoutCallback } from "@client/lib/axios";
 
@@ -46,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthLogoutCallback(handleAuthLogout);
     }, [router]);
 
-    const checkAuth = () => {
+    const checkAuth = useCallback(() => {
         try {
             // Check if we have a stored token
             const token = localStorage.getItem("accessToken");
@@ -93,11 +99,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pathname]);
 
     useEffect(() => {
         checkAuth();
-    }, []);
+    }, [checkAuth]);
 
     // Redirect logic
     useEffect(() => {

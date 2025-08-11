@@ -469,3 +469,94 @@ export const redirectToPickupTransfer = async (
         return `/admin/transfers/pickup?rental=${rentalId}`;
     }
 };
+
+// Print invoice as PDF
+export const printInvoiceAsPDF = async (rentalId: string): Promise<void> => {
+    try {
+        const response = await apiClient.get(
+            `/rentals/${rentalId}/invoice/pdf`,
+            {
+                responseType: "blob",
+            },
+        );
+
+        // Create blob link to download
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+
+        // Create a temporary link to trigger download/print
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `invoice-${rentalId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL
+        window.URL.revokeObjectURL(url);
+
+        console.log(`✅ Invoice PDF generated for rental ${rentalId}`);
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for PDF generation for rental ${rentalId}:`,
+            error,
+        );
+        // Throw error to let caller handle fallback
+        throw new Error("PDF generation service unavailable");
+    }
+};
+
+// Send invoice via email
+export const sendInvoiceEmail = async (
+    rentalId: string,
+): Promise<{ success: boolean; message: string }> => {
+    try {
+        const response = await apiClient.post(
+            `/rentals/${rentalId}/invoice/send-email`,
+        );
+
+        return {
+            success: true,
+            message:
+                (response.data as { message?: string })?.message ||
+                "Invoice sent successfully",
+        };
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for email sending for rental ${rentalId}, using fallback behavior:`,
+            error instanceof Error ? error.message : String(error),
+        );
+
+        // Return fallback response
+        return {
+            success: false,
+            message:
+                "Email service temporarily unavailable. Please try again later.",
+        };
+    }
+};
+
+// Delete quotation/rental
+export const deleteRental = async (
+    rentalId: string,
+): Promise<{ success: boolean; message: string }> => {
+    try {
+        await apiClient.delete(`/rentals/${rentalId}`);
+
+        return {
+            success: true,
+            message: "Quotation deleted successfully",
+        };
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for rental deletion for rental ${rentalId}, using fallback behavior:`,
+            error,
+        );
+
+        // Return fallback response
+        return {
+            success: false,
+            message: "Failed to delete quotation. Please try again.",
+        };
+    }
+};
