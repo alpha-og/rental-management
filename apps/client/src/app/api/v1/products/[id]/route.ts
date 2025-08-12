@@ -6,10 +6,10 @@ const BACKEND_URL =
 // GET /api/v1/products/[id] - Get a product by id
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> },
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         const response = await fetch(`${BACKEND_URL}/products/${id}`, {
             method: "GET",
@@ -45,10 +45,10 @@ export async function GET(
 // PUT /api/v1/products/[id] - Update a product
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> },
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body: unknown = await request.json();
 
         const response = await fetch(`${BACKEND_URL}/products/${id}`, {
@@ -88,10 +88,10 @@ export async function PUT(
 // DELETE /api/v1/products/[id] - Delete a product
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> },
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         const response = await fetch(`${BACKEND_URL}/products/${id}`, {
             method: "DELETE",
