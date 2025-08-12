@@ -1,0 +1,184 @@
+{
+    "products": [
+        {
+            "id": 1,
+            "name": "Wireless Bluetooth Headphones",
+            "price": 99.99,
+            "rating": 4.5,
+            "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "Premium wireless headphones with noise cancellation"
+        },
+        {
+            "id": 2,
+            "name": "Premium Coffee Beans",
+            "price": 24.99,
+            "rating": 4.8,
+            "image": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop&auto=format",
+            "category": "Food & Beverage",
+            "description": "Single origin arabica coffee beans, medium roast"
+        },
+        {
+            "id": 3,
+            "name": "Ergonomic Office Chair",
+            "price": 299.99,
+            "rating": 4.3,
+            "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop&auto=format",
+            "category": "Furniture",
+            "description": "Comfortable office chair with lumbar support"
+        },
+        {
+            "id": 4,
+            "name": "Smart Fitness Watch",
+            "price": 199.99,
+            "rating": 4.6,
+            "image": "https://images.unsplash.com/photo-1544117519-31a4b719223d?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "Track your fitness goals with GPS and heart rate monitor"
+        },
+        {
+            "id": 5,
+            "name": "Organic Green Tea",
+            "price": 18.99,
+            "rating": 4.4,
+            "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=400&fit=crop&auto=format",
+            "category": "Food & Beverage",
+            "description": "Organic loose leaf green tea with antioxidants"
+        },
+        {
+            "id": 6,
+            "name": "Modern Desk Lamp",
+            "price": 79.99,
+            "rating": 4.2,
+            "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop&auto=format",
+            "category": "Home & Garden",
+            "description": "LED desk lamp with adjustable brightness and color temperature"
+        },
+        {
+            "id": 7,
+            "name": "Mechanical Keyboard",
+            "price": 149.99,
+            "rating": 4.7,
+            "image": "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "RGB mechanical keyboard with blue switches"
+        },
+        {
+            "id": 8,
+            "name": "Yoga Mat Premium",
+            "price": 49.99,
+            "rating": 4.5,
+            "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop&auto=format",
+            "category": "Sports & Fitness",
+            "description": "Non-slip yoga mat with extra thickness for comfort"
+        },
+        {
+            "id": 9,
+            "name": "Ceramic Coffee Mug Set",
+            "price": 34.99,
+            "rating": 4.3,
+            "image": "https://images.unsplash.com/photo-1514228742587-6b1558fcf93a?w=400&h=400&fit=crop&auto=format",
+            "category": "Home & Garden",
+            "description": "Set of 4 handcrafted ceramic coffee mugs"
+        },
+        {
+            "id": 10,
+            "name": "Wireless Phone Charger",
+            "price": 39.99,
+            "rating": 4.1,
+            "image": "https://images.unsplash.com/photo-1609592842635-b5e3d8b68f40?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "Fast wireless charging pad compatible with all devices"
+        },
+        {
+            "id": 11,
+            "name": "Minimalist Wall Clock",
+            "price": 59.99,
+            "rating": 4.4,
+            "image": "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=400&h=400&fit=crop&auto=format",
+            "category": "Home & Garden",
+            "description": "Silent wall clock with modern minimalist design"
+        },
+        {
+            "id": 12,
+            "name": "Protein Powder Vanilla",
+            "price": 45.99,
+            "rating": 4.6,
+            "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&auto=format",
+            "category": "Sports & Fitness",
+            "description": "Whey protein powder with natural vanilla flavor"
+        },
+        {
+            "id": 13,
+            "name": "Bamboo Cutting Board",
+            "price": 29.99,
+            "rating": 4.7,
+            "image": "https://images.unsplash.com/photo-1594736797933-d0d30580f2d7?w=400&h=400&fit=crop&auto=format",
+            "category": "Home & Garden",
+            "description": "Sustainable bamboo cutting board with juice groove"
+        },
+        {
+            "id": 14,
+            "name": "Bluetooth Speaker",
+            "price": 89.99,
+            "rating": 4.3,
+            "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "Portable Bluetooth speaker with 360-degree sound"
+        },
+        {
+            "id": 15,
+            "name": "Resistance Bands Set",
+            "price": 24.99,
+            "rating": 4.5,
+            "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&auto=format",
+            "category": "Sports & Fitness",
+            "description": "Complete resistance bands set with door anchor"
+        },
+        {
+            "id": 16,
+            "name": "Artisan Dark Chocolate",
+            "price": 12.99,
+            "rating": 4.8,
+            "image": "https://images.unsplash.com/photo-1511381939415-e44015466834?w=400&h=400&fit=crop&auto=format",
+            "category": "Food & Beverage",
+            "description": "Premium dark chocolate bar with 70% cacao"
+        },
+        {
+            "id": 17,
+            "name": "Stainless Steel Water Bottle",
+            "price": 19.99,
+            "rating": 4.4,
+            "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop&auto=format",
+            "category": "Sports & Fitness",
+            "description": "Insulated water bottle keeps drinks cold for 24 hours"
+        },
+        {
+            "id": 18,
+            "name": "Smart LED Light Bulb",
+            "price": 15.99,
+            "rating": 4.2,
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&auto=format",
+            "category": "Electronics",
+            "description": "WiFi enabled smart bulb with color changing capability"
+        },
+        {
+            "id": 19,
+            "name": "Memory Foam Pillow",
+            "price": 39.99,
+            "rating": 4.5,
+            "image": "https://images.unsplash.com/photo-1631049552240-59c37f38802b?w=400&h=400&fit=crop&auto=format",
+            "category": "Home & Garden",
+            "description": "Contour memory foam pillow for better sleep"
+        },
+        {
+            "id": 20,
+            "name": "Outdoor Camping Backpack",
+            "price": 89.99,
+            "rating": 4.6,
+            "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop&auto=format",
+            "category": "Sports & Fitness",
+            "description": "Waterproof hiking backpack with 40L capacity"
+        }
+    ]
+}
