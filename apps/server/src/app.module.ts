@@ -15,7 +15,9 @@ import { OrdersModule } from "./orders/orders.module";
 import { AttachmentsModule } from "./attachments/attachments.module";
 import { QuotationsModule } from "./quotations/quotations.module";
 import { AssociationsModule } from "./associations/associations.module";
-
+import { MulterModule } from "@nestjs/platform-express";
+import { AppwriteService } from "./config/appwrite.config";
+import { DashboardModule } from "./dashboard/dashboard.module";
 @Module({
     imports: [
         SequelizeModule.forRoot({
@@ -26,14 +28,24 @@ import { AssociationsModule } from "./associations/associations.module";
             database: process.env.POSTGRES_DB,
             autoLoadModels: true,
             synchronize: true,
-            // synchronize: process.env.NODE_ENV !== "production",
         }),
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath:
                 process.env.NODE_ENV === "production"
-                    ? ".env.production"
-                    : ".env.development",
+                    ? ".env.prod"
+                    : ".env.dev",
+        }),
+        MulterModule.register({
+            limits: {
+                fileSize: 5 * 1024 * 1024, // 5MB
+            },
+            fileFilter: (req, file, cb) => {
+                if (!file.mimetype.startsWith("image/")) {
+                    return cb(new Error("Only image files are allowed"), false);
+                }
+                cb(null, true);
+            },
         }),
         AssociationsModule,
         UserModule,
@@ -45,6 +57,7 @@ import { AssociationsModule } from "./associations/associations.module";
         OrdersModule,
         AttachmentsModule,
         QuotationsModule,
+        DashboardModule,
     ],
     controllers: [AppController],
     providers: [
@@ -53,6 +66,7 @@ import { AssociationsModule } from "./associations/associations.module";
             provide: APP_GUARD,
             useClass: AuthGuard,
         },
+        AppwriteService,
     ],
 })
 export class AppModule {}

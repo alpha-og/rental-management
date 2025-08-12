@@ -77,7 +77,7 @@ export class AttachmentsController {
         description: "Bad request.",
     })
     async create(@Body() dto: CreateAttachmentDto): Promise<Attachment> {
-        return this.attachmentsService.create(dto);
+        return this.attachmentsService.uploadImage(dto);
     }
 
     @Put(":id")

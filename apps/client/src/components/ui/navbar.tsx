@@ -5,10 +5,11 @@ import { Button } from "./button";
 import {
     Home,
     ShoppingCart,
-    // Heart,
+    Heart,
     User,
     Menu as MenuIcon,
     X as XIcon,
+    Package,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -51,15 +52,20 @@ export function Navbar({ hideAuthButtons }: NavbarProps) {
                             </Link>
                         </Button>
                         <Button asChild variant="ghost">
+                            <Link href="/user/products">
+                                <Package className="mr-2 h-4 w-4" /> Rental Shop
+                            </Link>
+                        </Button>
+                        <Button asChild variant="ghost">
+                            <Link href="/wishlist">
+                                <Heart className="mr-2 h-4 w-4" /> Wishlist
+                            </Link>
+                        </Button>
+                        <Button asChild variant="ghost">
                             <Link href="/cart">
                                 <ShoppingCart className="mr-2 h-4 w-4" /> Cart
                             </Link>
                         </Button>
-                        {/* <Button asChild variant="ghost">
-                            <Link href="/wishlist">
-                                <Heart className="mr-2 h-4 w-4" /> Wishlist
-                            </Link>
-                        </Button> */}
                         <Button asChild variant="ghost">
                             <Link href="/user">
                                 <User className="mr-2 h-4 w-4" /> User Info
@@ -92,20 +98,28 @@ export function Navbar({ hideAuthButtons }: NavbarProps) {
                         </Button>
                         <Button asChild variant="ghost" className="w-full">
                             <Link
-                                href="/cart"
+                                href="/user/products"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                <ShoppingCart className="mr-2 h-4 w-4" /> Cart
+                                <Package className="mr-2 h-4 w-4" /> Rental Shop
                             </Link>
                         </Button>
-                        {/* <Button asChild variant="ghost" className="w-full">
+                        <Button asChild variant="ghost" className="w-full">
                             <Link
                                 href="/wishlist"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <Heart className="mr-2 h-4 w-4" /> Wishlist
                             </Link>
-                        </Button> */}
+                        </Button>
+                        <Button asChild variant="ghost" className="w-full">
+                            <Link
+                                href="/cart"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <ShoppingCart className="mr-2 h-4 w-4" /> Cart
+                            </Link>
+                        </Button>
                         <Button asChild variant="ghost" className="w-full">
                             <Link
                                 href="/user"

@@ -13,7 +13,9 @@
         "start:prod": "node dist/main",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "vitest",
-        "test:e2e": "vitest --config vitest.config-e2e.ts"
+        "test:e2e": "vitest --config vitest.config-e2e.ts",
+        "seed": "ts-node src/seed/run-seed.ts",
+        "seed:dev": "nest start --entryFile seed/run-seed"
     },
     "dependencies": {
         "@nestjs/common": "^11.0.1",
@@ -22,10 +24,12 @@
         "@nestjs/jwt": "^11.0.0",
         "@nestjs/platform-express": "^11.0.1",
         "@nestjs/sequelize": "^11.0.0",
+        "@paypal/paypal-server-sdk": "^1.1.0",
         "bcrypt": "^6.0.0",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.2",
         "cookie-parser": "^1.4.7",
+        "node-appwrite": "^17.2.0",
         "pg": "^8.16.3",
         "pg-hstore": "^2.3.4",
         "reflect-metadata": "^0.2.2",
@@ -35,6 +39,7 @@
     },
     "devDependencies": {
         "@darraghor/eslint-plugin-nestjs-typed": "^6.7.1",
+        "@faker-js/faker": "^9.9.0",
         "@nestjs/cli": "^11.0.0",
         "@nestjs/schematics": "^11.0.0",
         "@nestjs/swagger": "^11.2.0",
@@ -44,6 +49,8 @@
         "@types/bcrypt": "^6.0.0",
         "@types/cookie-parser": "^1.4.9",
         "@types/express": "^5.0.0",
+        "@types/multer": "^2.0.0",
+        "@types/node": "^24.0.14",
         "@types/sequelize": "^6.12.0",
         "@types/supertest": "^6.0.2",
         "source-map-support": "^0.5.21",

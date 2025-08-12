@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { login } from "./api";
+import { useRouter } from "next/navigation";
 import { Button } from "@client/components/ui/button";
 import {
     Card,
@@ -16,6 +17,7 @@ import { Label } from "@client/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -38,8 +40,10 @@ export default function LoginPage() {
         if (!email || !password) return;
         setLoading(true);
         try {
-            await login({ email, password });
+            const data = await login({ email, password });
             setSuccess(true);
+            localStorage.setItem("accessToken", data.accessToken);
+            router.push("admin/dashboard");
         } catch (e) {
             const message =
                 typeof e === "object" && e && "message" in e

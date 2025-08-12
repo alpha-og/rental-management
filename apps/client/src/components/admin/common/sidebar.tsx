@@ -296,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
                 <div
                     className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+                        "flex items-center gap-3 px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
                         isCollapsed && !isMobile && "justify-center px-2",
                     )}
                     tabIndex={0}

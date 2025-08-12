@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsString, IsUUID, IsOptional } from "class-validator";
+import { IsNotEmpty, IsUUID, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
+// DTO for creating an attachment
 export class CreateAttachmentDto {
     @ApiProperty({
         description: "The ID of the product this attachment belongs to",
@@ -11,21 +12,21 @@ export class CreateAttachmentDto {
     productId!: string;
 
     @ApiProperty({
-        description: "The URL of the attachment",
-        example: "https://example.com/attachment.pdf",
+        description: "File to upload",
+        type: Buffer,
     })
-    @IsString()
     @IsNotEmpty()
-    url!: string;
+    file!: File;
 }
 
+// DTO for updating an attachment
 export class UpdateAttachmentDto {
     @ApiProperty({
-        description: "The URL of the attachment",
-        example: "https://example.com/attachment.pdf",
+        description: "The ID of the product this attachment belongs to",
+        example: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
         required: false,
     })
-    @IsString()
+    @IsUUID()
     @IsOptional()
-    url?: string;
+    productId?: string;
 }
