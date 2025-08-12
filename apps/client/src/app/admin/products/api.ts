@@ -1,16 +1,4 @@
-import axios from "axios";
-
-// API configuration
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-
-// Create axios instance with default config
-const apiClient = axios.create({
-    baseURL: BASE_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+import axios from "../../../lib/axios";
 
 // Types for product data
 export interface ProductData {
@@ -67,6 +55,19 @@ export interface ReturnData {
     untaxedTotal: number;
     tax: number;
     total: number;
+}
+
+// Attachment interface matching the backend model
+export interface AttachmentData {
+    id: string;
+    productId: string;
+    appwriteFileId: string;
+    fileName: string;
+    fileSize: number;
+    fileUrl: string;
+    mimeType?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 // Fallback/dummy data
@@ -188,7 +189,7 @@ const FALLBACK_RETURNS: ReturnData[] = [
 // API functions
 export const getProducts = async (): Promise<ProductData[]> => {
     try {
-        const response = await apiClient.get("/products");
+        const response = await axios.get("/products");
         return response.data as ProductData[];
     } catch (error) {
         console.warn(
@@ -203,7 +204,7 @@ export const getProductById = async (
     productId: string,
 ): Promise<ProductData> => {
     try {
-        const response = await apiClient.get(`/products/${productId}`);
+        const response = await axios.get(`/products/${productId}`);
         return response.data as ProductData;
     } catch (error) {
         console.warn(
@@ -221,7 +222,7 @@ export const createProduct = async (
     productData: Partial<ProductData>,
 ): Promise<ProductData> => {
     try {
-        const response = await apiClient.post("/products", productData);
+        const response = await axios.post("/products", productData);
         return response.data as ProductData;
     } catch (error) {
         console.warn(
@@ -251,10 +252,7 @@ export const updateProduct = async (
     productData: Partial<ProductData>,
 ): Promise<ProductData> => {
     try {
-        const response = await apiClient.put(
-            `/products/${productId}`,
-            productData,
-        );
+        const response = await axios.put(`/products/${productId}`, productData);
         return response.data as ProductData;
     } catch (error) {
         console.warn(
@@ -273,7 +271,7 @@ export const updateProduct = async (
 
 export const deleteProduct = async (productId: string): Promise<void> => {
     try {
-        await apiClient.delete(`/products/${productId}`);
+        await axios.delete(`/products/${productId}`);
     } catch (error) {
         console.warn(
             `Backend endpoint not available for deleting product ${productId}, using fallback behavior:`,
@@ -284,7 +282,7 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 
 export const getTransfers = async (): Promise<TransferData[]> => {
     try {
-        const response = await apiClient.get("/transfers");
+        const response = await axios.get("/transfers");
         return response.data as TransferData[];
     } catch (error) {
         console.warn(
@@ -297,7 +295,7 @@ export const getTransfers = async (): Promise<TransferData[]> => {
 
 export const getReturns = async (): Promise<ReturnData[]> => {
     try {
-        const response = await apiClient.get("/returns");
+        const response = await axios.get("/returns");
         return response.data as ReturnData[];
     } catch (error) {
         console.warn(
@@ -312,7 +310,7 @@ export const createTransfer = async (
     transferData: Partial<TransferData>,
 ): Promise<TransferData> => {
     try {
-        const response = await apiClient.post("/transfers", transferData);
+        const response = await axios.post("/transfers", transferData);
         return response.data as TransferData;
     } catch (error) {
         console.warn(
@@ -344,7 +342,7 @@ export const createReturn = async (
     returnData: Partial<ReturnData>,
 ): Promise<ReturnData> => {
     try {
-        const response = await apiClient.post("/returns", returnData);
+        const response = await axios.post("/returns", returnData);
         return response.data as ReturnData;
     } catch (error) {
         console.warn(
@@ -368,5 +366,67 @@ export const createReturn = async (
             tax: 0,
             total: 0,
         };
+    }
+};
+
+// Attachment API functions
+export const getAttachmentsByProduct = async (
+    productId: string,
+): Promise<AttachmentData[]> => {
+    try {
+        const response = await axios.get(`/attachments/product/${productId}`);
+        return response.data as AttachmentData[];
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for product ${productId} attachments, using fallback data:`,
+            error,
+        );
+        return [];
+    }
+};
+
+export const uploadProductImage = async (
+    productId: string,
+    file: File,
+): Promise<AttachmentData> => {
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("productId", productId);
+
+        const response = await axios.post("/attachments", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        return response.data as AttachmentData;
+    } catch (error) {
+        console.warn(
+            "Backend endpoint not available for uploading image, using fallback behavior:",
+            error,
+        );
+        // Create a fallback attachment object
+        return {
+            id: `ATT${String(Date.now()).slice(-3)}`,
+            productId: productId,
+            appwriteFileId: `fallback_${Date.now()}`,
+            fileName: file.name,
+            fileSize: file.size,
+            fileUrl: URL.createObjectURL(file), // Create temporary URL for demo
+            mimeType: file.type,
+            createdAt: new Date().toISOString(),
+        };
+    }
+};
+
+export const deleteAttachment = async (attachmentId: string): Promise<void> => {
+    try {
+        await axios.delete(`/attachments/${attachmentId}`);
+    } catch (error) {
+        console.warn(
+            `Backend endpoint not available for deleting attachment ${attachmentId}, using fallback behavior:`,
+            error,
+        );
     }
 };
