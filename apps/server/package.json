@@ -13,7 +13,9 @@
         "start:prod": "node dist/main",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "vitest",
-        "test:e2e": "vitest --config vitest.config-e2e.ts"
+        "test:e2e": "vitest --config vitest.config-e2e.ts",
+        "seed": "ts-node src/seed/run-seed.ts",
+        "seed:dev": "nest start --entryFile seed/run-seed"
     },
     "dependencies": {
         "@nestjs/common": "^11.0.1",
@@ -37,6 +39,7 @@
     },
     "devDependencies": {
         "@darraghor/eslint-plugin-nestjs-typed": "^6.7.1",
+        "@faker-js/faker": "^9.9.0",
         "@nestjs/cli": "^11.0.0",
         "@nestjs/schematics": "^11.0.0",
         "@nestjs/swagger": "^11.2.0",
