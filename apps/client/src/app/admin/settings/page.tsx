@@ -1,4 +1,5 @@
 import { AdminLayout } from "@client/components/admin/common";
+import SettingsComponent from "@client/components/admin/settings/page";
 
 export default function SettingsPage() {
     return (
@@ -12,14 +13,7 @@ export default function SettingsPage() {
                     </div>
                 </header>
                 <main className="flex-1 p-4 sm:p-6">
-                    <div className="bg-white rounded-lg border shadow-sm p-8 text-center">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                            System Settings
-                        </h2>
-                        <p className="text-gray-600">
-                            Settings functionality coming soon...
-                        </p>
-                    </div>
+                    <SettingsComponent />
                 </main>
             </div>
         </AdminLayout>
