@@ -10,7 +10,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
     title: "Rental Management",
-    description: "Renting simplified",
+    description:
+        "Your all-in-one rental platform. From equipment to event supplies - discover, book, and manage rentals with ease.",
 };
 
 export default function RootLayout({
