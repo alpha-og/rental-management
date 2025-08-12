@@ -17,6 +17,7 @@ const ITEMS_PER_PAGE = 9;
 const DEFAULT_FILTERS: FilterState = {
     priceRange: [0, 1000],
     rating: 0,
+    categories: [],
 };
 
 export default function UserPage() {
