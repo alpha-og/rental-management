@@ -18,6 +18,8 @@ import { AssociationsModule } from "./associations/associations.module";
 import { MulterModule } from "@nestjs/platform-express";
 import { AppwriteService } from "./config/appwrite.config";
 import { DashboardModule } from "./dashboard/dashboard.module";
+import { PaymentModule } from "./payment/payment.module";
+
 @Module({
     imports: [
         SequelizeModule.forRoot({
@@ -58,6 +60,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
         AttachmentsModule,
         QuotationsModule,
         DashboardModule,
+        PaymentModule,
     ],
     controllers: [AppController],
     providers: [

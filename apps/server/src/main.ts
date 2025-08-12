@@ -3,11 +3,15 @@ import { AppModule } from "./app.module";
 import cookieParser from "cookie-parser";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { runSeeder } from "./seed/seed";
 
 const PORT = process.env.PORT ?? 4000;
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Seed database
+    await runSeeder();
 
     // Define api route prefix
     app.setGlobalPrefix("api/v1");

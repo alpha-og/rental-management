@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@client/components/ui/button";
 import { Input } from "@client/components/ui/input";
 import { Label } from "@client/components/ui/label";
@@ -15,6 +16,8 @@ import {
     Eye,
     Filter,
     X,
+    Upload,
+    ImageIcon,
 } from "lucide-react";
 import {
     getProducts,
@@ -25,18 +28,131 @@ import {
     createReturn,
     updateProduct,
     deleteProduct,
+    getAttachmentsByProduct,
+    uploadProductImage,
+    deleteAttachment,
+    // New API functions
     type ProductData,
+    type CreateProductRequest,
+    type UpdateProductRequest,
     type TransferData,
     type ReturnData,
+    type AttachmentData,
 } from "@client/app/admin/products/api";
 
-// Status badge components
+// Form interface for legacy compatibility
+interface ProductFormData {
+    name: string;
+    description: string;
+    category: string;
+    unitPrice: number;
+    rentalPeriod: "daily" | "weekly" | "monthly";
+    stockQuantity: number;
+    rentalPricing: {
+        extraHour: number;
+        extraDay: number;
+        priceList: number;
+    };
+}
+
+// Convert between new API format and form format
+const convertProductToForm = (product: ProductData): ProductFormData => ({
+    name: product.name,
+    description: product.description || "",
+    category: product.category || "General",
+    unitPrice: product.price,
+    rentalPeriod: "daily",
+    stockQuantity: product.quantity,
+    rentalPricing: {
+        extraHour: 0,
+        extraDay: 0,
+        priceList: product.price,
+    },
+});
+
+const convertFormToCreateRequest = (
+    formData: ProductFormData,
+): CreateProductRequest => {
+    // Validate and clean the data
+    const name = formData.name?.trim();
+    const price = Number(formData.unitPrice);
+    const quantity = Number(formData.stockQuantity);
+    const description = formData.description?.trim();
+
+    if (!name) {
+        throw new Error("Product name is required");
+    }
+    if (isNaN(price) || price <= 0) {
+        throw new Error("Product price must be a valid number greater than 0");
+    }
+    if (isNaN(quantity) || quantity <= 0) {
+        throw new Error(
+            "Product quantity must be a valid number greater than 0",
+        );
+    }
+
+    return {
+        name,
+        price,
+        description: description || "",
+        quantity,
+    };
+};
+
+const convertFormToUpdateRequest = (
+    formData: Partial<ProductFormData>,
+): UpdateProductRequest => {
+    const result: UpdateProductRequest = {};
+
+    if (formData.name !== undefined) {
+        const name = formData.name.trim();
+        if (!name) {
+            throw new Error("Product name cannot be empty");
+        }
+        result.name = name;
+    }
+
+    if (formData.unitPrice !== undefined) {
+        const price = Number(formData.unitPrice);
+        if (isNaN(price) || price <= 0) {
+            throw new Error(
+                "Product price must be a valid number greater than 0",
+            );
+        }
+        result.price = price;
+    }
+
+    if (formData.description !== undefined) {
+        result.description = formData.description?.trim() || "";
+    }
+
+    if (formData.stockQuantity !== undefined) {
+        const quantity = Number(formData.stockQuantity);
+        if (isNaN(quantity) || quantity <= 0) {
+            throw new Error(
+                "Product quantity must be a valid number greater than 0",
+            );
+        }
+        result.quantity = quantity;
+    }
+
+    return result;
+};
+
+// Generate legacy display fields for compatibility
+const getProductAvailability = (
+    product: ProductData,
+): "available" | "rented" | "maintenance" => {
+    return product.quantity > 0 ? "available" : "rented";
+};
 const AvailabilityBadge = ({
     status,
 }: {
-    status: ProductData["availability"];
+    status: "available" | "rented" | "maintenance";
 }) => {
-    const getStatusConfig = (status: ProductData["availability"]) => {
+    const getStatusConfig = (
+        status: "available" | "rented" | "maintenance",
+    ) => {
         switch (status) {
             case "available":
                 return {
@@ -100,6 +216,239 @@ const StatusBadge = ({
     );
 };
 
+// Image upload component
+const ImageUpload = ({
+    onImageUpload,
+    currentImageUrl,
+    productId,
+}: {
+    onImageUpload: (attachment: AttachmentData) => void;
+    currentImageUrl?: string;
+    productId?: string;
+}) => {
+    const [uploading, setUploading] = useState(false);
+    const [attachments, setAttachments] = useState<AttachmentData[]>([]);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const loadAttachments = React.useCallback(async () => {
+        if (!productId) return;
+        try {
+            const productAttachments = await getAttachmentsByProduct(productId);
+            setAttachments(productAttachments);
+        } catch (error) {
+            console.error("Failed to load attachments:", error);
+        }
+    }, [productId]);
+
+    // Load existing attachments when productId changes
+    React.useEffect(() => {
+        if (productId) {
+            void loadAttachments();
+        }
+    }, [productId, loadAttachments]);
+
+    const handleFileSelect = async (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const file = event.target.files?.[0];
+        if (!file || !productId) return;
+
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+            alert("Please select an image file");
+            return;
+        }
+
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File size must be less than 5MB");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            // Upload file and get attachment data
+            const attachment = await uploadProductImage(productId, file);
+
+            // Refresh attachments list
+            await loadAttachments();
+
+            // Notify parent component
+            onImageUpload(attachment);
+
+            alert("Image uploaded successfully!");
+        } catch (error) {
+            console.error("Failed to upload image:", error);
+            alert("Failed to upload image. Please try again.");
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
+    };
+
+    const handleRemoveAttachment = async (attachmentId: string) => {
+        if (!confirm("Are you sure you want to remove this image?")) return;
+
+        try {
+            await deleteAttachment(attachmentId);
+            await loadAttachments();
+            alert("Image removed successfully!");
+        } catch (error) {
+            console.error("Failed to remove attachment:", error);
+            alert("Failed to remove image. Please try again.");
+        }
+    };
+
+    const handleUseAsMainImage = (attachment: AttachmentData) => {
+        onImageUpload(attachment);
+    };
+
+    if (!productId) {
+        return (
+            <div className="space-y-4">
+                <Label>Product Images</Label>
+                <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center">
+                    <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                        Save the product first to upload images
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <Label>Product Images</Label>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="flex items-center gap-2"
+                >
+                    {uploading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                            Uploading...
+                        </>
+                    ) : (
+                        <>
+                            <Upload className="h-4 w-4" />
+                            Upload Image
+                        </>
+                    )}
+                </Button>
+            </div>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                    void handleFileSelect(e);
+                }}
+                className="hidden"
+            />
+
+            {/* Current main image preview */}
+            {currentImageUrl && (
+                <div className="relative">
+                    <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
+                        <Image
+                            src={currentImageUrl}
+                            alt="Product preview"
+                            width={400}
+                            height={200}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <Label className="text-sm text-gray-600 mt-1">
+                        Main Product Image
+                    </Label>
+                </div>
+            )}
+
+            {/* Attachment gallery */}
+            {attachments.length > 0 && (
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                        All Product Images
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {attachments.map((attachment) => (
+                            <div key={attachment.id} className="relative group">
+                                <div className="w-full h-24 border border-gray-200 rounded-lg overflow-hidden">
+                                    <Image
+                                        src={attachment.fileUrl}
+                                        alt={attachment.fileName}
+                                        width={96}
+                                        height={96}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleUseAsMainImage(attachment)
+                                            }
+                                            className="h-6 w-6 p-0 bg-white/90"
+                                            title="Use as main image"
+                                        >
+                                            <ImageIcon className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                void handleRemoveAttachment(
+                                                    attachment.id,
+                                                );
+                                            }}
+                                            className="h-6 w-6 p-0 bg-white/90 text-red-600 hover:text-red-700"
+                                            title="Remove image"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 truncate">
+                                    {attachment.fileName}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Upload area when no images */}
+            {!currentImageUrl && attachments.length === 0 && (
+                <div
+                    className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                        Click to upload product image
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        PNG, JPG up to 5MB
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // Product form component
 const ProductForm = ({
     product,
@@ -107,28 +456,52 @@ const ProductForm = ({
     onCancel,
 }: {
     product?: ProductData;
-    onSave: (productData: Partial<ProductData>) => void | Promise<void>;
+    onSave: (
+        productData: CreateProductRequest | UpdateProductRequest,
+    ) => void | Promise<void>;
     onCancel: () => void;
 }) => {
-    const [formData, setFormData] = useState<Partial<ProductData>>(
-        product || {
-            name: "",
-            description: "",
-            category: "",
-            unitPrice: 0,
-            rentalPeriod: "daily",
-            stockQuantity: 1,
-            rentalPricing: {
-                extraHour: 0,
-                extraDay: 0,
-                priceList: 0,
-            },
-        },
+    const [formData, setFormData] = useState<ProductFormData>(
+        product
+            ? convertProductToForm(product)
+            : {
+                  name: "",
+                  description: "",
+                  category: "",
+                  unitPrice: 1,
+                  rentalPeriod: "daily",
+                  stockQuantity: 1,
+                  rentalPricing: {
+                      extraHour: 0,
+                      extraDay: 0,
+                      priceList: 1,
+                  },
+              },
     );
+
+    const [mainImage, setMainImage] = useState<string>("");
+
+    const handleImageUpload = (attachment: AttachmentData) => {
+        setMainImage(attachment.fileUrl);
+        // You could also save attachment.id to the product if needed
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        void onSave(formData);
+
+        try {
+            if (product) {
+                void onSave(convertFormToUpdateRequest(formData));
+            } else {
+                void onSave(convertFormToCreateRequest(formData));
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("Please check your input and try again.");
+            }
+        }
     };
 
     return (
@@ -199,15 +572,16 @@ const ProductForm = ({
                             <Input
                                 id="stockQuantity"
                                 type="number"
-                                value={formData.stockQuantity || 0}
+                                value={formData.stockQuantity || 1}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
                                         stockQuantity:
-                                            parseInt(e.target.value) || 0,
+                                            parseInt(e.target.value) || 1,
                                     })
                                 }
-                                min="0"
+                                min="1"
+                                required
                             />
                         </div>
                     </div>
@@ -254,7 +628,7 @@ const ProductForm = ({
                                             setFormData({
                                                 ...formData,
                                                 rentalPricing: {
-                                                    ...formData.rentalPricing!,
+                                                    ...formData.rentalPricing,
                                                     extraHour:
                                                         parseFloat(
                                                             e.target.value,
@@ -285,7 +659,7 @@ const ProductForm = ({
                                             setFormData({
                                                 ...formData,
                                                 rentalPricing: {
-                                                    ...formData.rentalPricing!,
+                                                    ...formData.rentalPricing,
                                                     extraDay:
                                                         parseFloat(
                                                             e.target.value,
@@ -318,13 +692,13 @@ const ProductForm = ({
                                                 ...formData,
                                                 unitPrice: price,
                                                 rentalPricing: {
-                                                    ...formData.rentalPricing!,
+                                                    ...formData.rentalPricing,
                                                     priceList: price,
                                                 },
                                             });
                                         }}
                                         step="0.01"
-                                        min="0"
+                                        min="0.01"
                                         required
                                     />
                                 </div>
@@ -334,6 +708,15 @@ const ProductForm = ({
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Image Upload Section */}
+                <div className="pt-4 border-t">
+                    <ImageUpload
+                        onImageUpload={handleImageUpload}
+                        currentImageUrl={mainImage}
+                        productId={product?.id}
+                    />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
@@ -401,17 +784,17 @@ const ProductsTable = ({
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {product.category}
+                                    {product.category || "General"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    Rs {product.unitPrice.toLocaleString()}
+                                    Rs {product.price.toLocaleString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {product.stockQuantity}
+                                    {product.quantity}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <AvailabilityBadge
-                                        status={product.availability}
+                                        status={getProductAvailability(product)}
                                     />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -433,9 +816,9 @@ const ProductsTable = ({
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                void onDelete(product.id)
-                                            }
+                                            onClick={() => {
+                                                void onDelete(product.id);
+                                            }}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -603,12 +986,14 @@ const ProductsPage = () => {
         setShowProductForm(true);
     };
 
-    const handleSaveProduct = async (productData: Partial<ProductData>) => {
+    const handleSaveProduct = async (
+        productData: CreateProductRequest | UpdateProductRequest,
+    ) => {
         try {
             if (editingProduct) {
                 const updatedProduct = await updateProduct(
                     editingProduct.id,
-                    productData,
+                    productData as UpdateProductRequest,
                 );
                 setProducts((prev) =>
                     prev.map((p) =>
@@ -617,7 +1002,9 @@ const ProductsPage = () => {
                 );
                 alert(`Product ${updatedProduct.name} updated successfully!`);
             } else {
-                const newProduct = await createProduct(productData);
+                const newProduct = await createProduct(
+                    productData as CreateProductRequest,
+                );
                 setProducts((prev) => [newProduct, ...prev]);
                 alert(`Product ${newProduct.name} created successfully!`);
             }
@@ -650,7 +1037,7 @@ const ProductsPage = () => {
 
     const handleViewProduct = (product: ProductData) => {
         alert(
-            `Product Details:\n\nName: ${product.name}\nDescription: ${product.description}\nCategory: ${product.category}\nPrice: Rs ${product.unitPrice}\nStock: ${product.stockQuantity}\nStatus: ${product.availability}`,
+            `Product Details:\n\nName: ${product.name}\nDescription: ${product.description || "N/A"}\nCategory: ${product.category || "General"}\nPrice: Rs ${product.price}\nStock: ${product.quantity}\nStatus: ${getProductAvailability(product)}`,
         );
     };
 
@@ -724,8 +1111,10 @@ const ProductsPage = () => {
     const filteredProducts = products.filter(
         (product) =>
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.description
+            (product.category || "")
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+            (product.description || "")
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()),
     );
@@ -784,7 +1173,9 @@ const ProductsPage = () => {
                     )}
                     {activeTab === "transfers" && (
                         <Button
-                            onClick={() => void handleCreateTransfer()}
+                            onClick={() => {
+                                void handleCreateTransfer();
+                            }}
                             className="flex items-center gap-2"
                         >
                             <ArrowUpDown className="h-4 w-4" />
@@ -793,7 +1184,9 @@ const ProductsPage = () => {
                     )}
                     {activeTab === "returns" && (
                         <Button
-                            onClick={() => void handleCreateReturn()}
+                            onClick={() => {
+                                void handleCreateReturn();
+                            }}
                             className="flex items-center gap-2"
                         >
                             <ArrowDownUp className="h-4 w-4" />
@@ -955,9 +1348,9 @@ const ProductsPage = () => {
                                 </p>
                                 {!searchTerm && (
                                     <Button
-                                        onClick={() =>
-                                            void handleCreateTransfer()
-                                        }
+                                        onClick={() => {
+                                            void handleCreateTransfer();
+                                        }}
                                         className="flex items-center gap-2"
                                     >
                                         <Plus className="h-4 w-4" />
@@ -981,9 +1374,9 @@ const ProductsPage = () => {
                                 </p>
                                 {!searchTerm && (
                                     <Button
-                                        onClick={() =>
-                                            void handleCreateReturn()
-                                        }
+                                        onClick={() => {
+                                            void handleCreateReturn();
+                                        }}
                                         className="flex items-center gap-2"
                                     >
                                         <Plus className="h-4 w-4" />
