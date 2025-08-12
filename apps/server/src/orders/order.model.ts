@@ -29,6 +29,10 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> {
     declare id: string;
 
     @AllowNull(false)
+    @Column(DataType.UUID)
+    declare quotationId: string;
+
+    @AllowNull(false)
     @Column(DataType.STRING)
     declare deliveryAddress: string;
 

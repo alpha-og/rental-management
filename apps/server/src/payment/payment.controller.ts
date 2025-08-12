@@ -19,6 +19,14 @@ import {
     PaymentResponseDto,
 } from "./payment.dto";
 import { AuthGuard } from "../auth/auth.guard";
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiBody,
+    ApiParam,
+    ApiBearerAuth,
+} from "@nestjs/swagger";
 
 interface PayPalWebhookEvent {
     event_type: string;
@@ -29,6 +37,8 @@ interface PayPalWebhookEvent {
     [key: string]: unknown;
 }
 
+@ApiBearerAuth()
+@ApiTags("Payment")
 @Controller("payment")
 export class PaymentController {
     private readonly logger = new Logger(PaymentController.name);
@@ -42,6 +52,15 @@ export class PaymentController {
     @Post("create")
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Create a new PayPal payment order" })
+    @ApiBody({ type: CreatePaymentDto, description: "Payment order details" })
+    @ApiResponse({
+        status: 201,
+        description: "Payment order created successfully",
+        type: PaymentResponseDto,
+    })
+    @ApiResponse({ status: 400, description: "Bad Request" })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     async createPayment(
         @Body() createPaymentDto: CreatePaymentDto,
     ): Promise<PaymentResponseDto> {
@@ -61,6 +80,20 @@ export class PaymentController {
     @Post("capture")
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: "Capture a PayPal payment (complete the transaction)",
+    })
+    @ApiBody({
+        type: CapturePaymentDto,
+        description: "Payment capture details",
+    })
+    @ApiResponse({
+        status: 200,
+        description: "Payment captured successfully",
+        type: PaymentResponseDto,
+    })
+    @ApiResponse({ status: 400, description: "Bad Request" })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     async capturePayment(
         @Body() capturePaymentDto: CapturePaymentDto,
     ): Promise<PaymentResponseDto> {
@@ -81,6 +114,15 @@ export class PaymentController {
      */
     @Get(":id")
     @UseGuards(AuthGuard)
+    @ApiOperation({ summary: "Get payment details by ID" })
+    @ApiParam({ name: "id", description: "Payment ID", type: String })
+    @ApiResponse({
+        status: 200,
+        description: "Payment details retrieved successfully",
+        type: PaymentResponseDto,
+    })
+    @ApiResponse({ status: 400, description: "Bad Request" })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     async getPayment(
         @Param("id") paymentId: string,
     ): Promise<PaymentResponseDto> {
@@ -100,6 +142,11 @@ export class PaymentController {
     @Post("refund")
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Refund a captured payment" })
+    @ApiBody({ type: RefundPaymentDto, description: "Refund details" })
+    @ApiResponse({ status: 200, description: "Payment refunded successfully" })
+    @ApiResponse({ status: 400, description: "Bad Request" })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     async refundPayment(
         @Body() refundPaymentDto: RefundPaymentDto,
     ): Promise<unknown> {
@@ -120,6 +167,15 @@ export class PaymentController {
      */
     @Get("client-token")
     @UseGuards(AuthGuard)
+    @ApiOperation({
+        summary: "Generate client token for PayPal client-side SDK",
+    })
+    @ApiResponse({
+        status: 200,
+        description: "Client token generated successfully",
+        schema: { example: { client_token: "YOUR_CLIENT_TOKEN" } },
+    })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     generateClientToken(): { client_token: string } {
         this.logger.log("Generating PayPal client token");
         try {
@@ -137,6 +193,24 @@ export class PaymentController {
      */
     @Post("webhook")
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: "PayPal webhook endpoint for payment notifications",
+    })
+    @ApiBody({
+        description: "PayPal webhook event payload",
+        schema: {
+            example: {
+                event_type: "PAYMENT.CAPTURE.COMPLETED",
+                resource: { id: "some_id" },
+            },
+        },
+    })
+    @ApiResponse({ status: 200, description: "Webhook processed successfully" })
+    @ApiResponse({
+        status: 400,
+        description: "Bad Request (e.g., invalid signature)",
+    })
+    @ApiResponse({ status: 500, description: "Internal Server Error" })
     handleWebhook(
         @Headers() headers: Record<string, unknown>,
         @Body() body: PayPalWebhookEvent,
@@ -199,6 +273,27 @@ export class PaymentController {
      * GET /payment/health
      */
     @Get("health")
+    @ApiOperation({ summary: "Health check endpoint for PayPal integration" })
+    @ApiResponse({
+        status: 200,
+        description: "PayPal integration is working correctly",
+        schema: {
+            example: {
+                status: "healthy",
+                message: "PayPal integration is working correctly",
+            },
+        },
+    })
+    @ApiResponse({
+        status: 500,
+        description: "PayPal integration is not working",
+        schema: {
+            example: {
+                status: "unhealthy",
+                message: "PayPal integration is not working",
+            },
+        },
+    })
     healthCheck(): { status: string; message: string } {
         try {
             // Generate a client token to test PayPal connectivity

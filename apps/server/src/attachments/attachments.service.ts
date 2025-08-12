@@ -23,6 +23,7 @@ export class AttachmentsService {
             const bucketId = this.appwriteService.getBucketId();
             const projectId = this.appwriteService.getProjectId();
 
+            console.log(dto);
             // Upload to Appwrite
             const uploadResult = await storage.createFile(
                 bucketId,
@@ -32,6 +33,7 @@ export class AttachmentsService {
 
             // Get file URL
             const fileUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucketId}/files/${uploadResult.$id}/view?project=${projectId}`;
+            console.log(fileUrl);
 
             // Save metadata to database
             const attachment = await this.attachmentModel.create({
