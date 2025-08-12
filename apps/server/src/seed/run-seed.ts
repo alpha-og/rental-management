@@ -12,9 +12,9 @@ async function bootstrap() {
         // Run the seeder
         await runSeeder();
 
-        console.log("✅ Seeding process completed successfully!");
+        console.log("Seeding process completed successfully!");
     } catch (error) {
-        console.error("❌ Seeding process failed:", error);
+        console.error("Seeding process failed:", error);
         process.exit(1);
     } finally {
         // Close the application context

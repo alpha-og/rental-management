@@ -50,6 +50,7 @@ interface QuotationSeedData {
 }
 
 interface OrderSeedData {
+    quotationId: string;
     deliveryAddress: string;
     status: "pending" | "confirmed" | "cancelled";
     endUserConfirmation: boolean;
@@ -63,7 +64,7 @@ interface ContractSeedData {
 }
 
 interface ReservationSeedData {
-    orderId?: string | null;
+    orderId: string; // Changed to be non-nullable
     productId: string;
     isValid: boolean;
 }
@@ -302,7 +303,7 @@ export class DatabaseSeeder {
     private attachments: Attachment[] = [];
 
     async seed(): Promise<void> {
-        console.log("🌱 Starting database seeding...");
+        console.log("Starting database seeding...");
 
         try {
             // Clear existing data
@@ -318,8 +319,8 @@ export class DatabaseSeeder {
             await this.seedContracts();
             await this.seedReservations();
 
-            console.log("✅ Database seeding completed successfully!");
-            console.log(`📊 Seeded data summary:
+            console.log("Database seeding completed successfully!");
+            console.log(`Seeded data summary:
 - Users: ${this.users.length}
 - Products: ${this.products.length}
 - Rates: ${this.rates.length}
@@ -329,15 +330,15 @@ export class DatabaseSeeder {
 - Contracts: ${this.contracts.length}
 - Reservations: ${this.reservations.length}`);
         } catch (error) {
-            console.error("❌ Error seeding database:", error);
+            console.error("Error seeding database:", error);
             throw error;
         }
     }
 
     private async clearDatabase(): Promise<void> {
-        console.log("🧹 Clearing existing data...");
+        console.log("Clearing existing data...");
 
-        // Clear in reverse order of dependencies
+        // Clear in reverse order of dependencies to respect foreign key constraints
         await Reservation.destroy({ where: {}, truncate: true, cascade: true });
         await Contract.destroy({ where: {}, truncate: true, cascade: true });
         await Order.destroy({ where: {}, truncate: true, cascade: true });
@@ -349,7 +350,7 @@ export class DatabaseSeeder {
     }
 
     private async seedUsers(): Promise<void> {
-        console.log("👥 Seeding users...");
+        console.log("Seeding users...");
 
         const userData: UserSeedData[] = [];
 
@@ -370,17 +371,17 @@ export class DatabaseSeeder {
                 email: faker.internet
                     .email({ firstName, lastName })
                     .toLowerCase(),
-                phone: faker.phone.number({ style: "international" }),
+                phone: faker.phone.number(),
                 passwordHash: await bcrypt.hash("password123", 10),
             });
         }
 
         this.users = await User.bulkCreate(userData);
-        console.log(`✅ Created ${this.users.length} users`);
+        console.log(`Created ${this.users.length} users`);
     }
 
     private async seedProducts(): Promise<void> {
-        console.log("📦 Seeding products...");
+        console.log("Seeding products...");
 
         const productData: ProductSeedData[] = [];
 
@@ -404,11 +405,11 @@ export class DatabaseSeeder {
         }
 
         this.products = await Product.bulkCreate(productData);
-        console.log(`✅ Created ${this.products.length} products`);
+        console.log(`Created ${this.products.length} products`);
     }
 
     private async seedRates(): Promise<void> {
-        console.log("💰 Seeding rates...");
+        console.log("Seeding rates...");
 
         const rateData: RateSeedData[] = [];
 
@@ -430,7 +431,7 @@ export class DatabaseSeeder {
                 const basePrice = product.price;
                 let price: number;
 
-                // Calculate price based on duration
+                // Calculate price based on duration for realism
                 switch (duration) {
                     case RateDuration.HOURLY:
                         price = basePrice * 0.05; // 5% of product price per hour
@@ -460,7 +461,7 @@ export class DatabaseSeeder {
             if (faker.datatype.boolean({ probability: 0.3 })) {
                 rateData.push({
                     productId: product.id,
-                    duration: RateDuration.DAILY,
+                    duration: RateDuration.DAILY, // Assuming extras are daily
                     price: faker.number.float({
                         min: 10,
                         max: 100,
@@ -472,11 +473,11 @@ export class DatabaseSeeder {
         }
 
         this.rates = await Rate.bulkCreate(rateData);
-        console.log(`✅ Created ${this.rates.length} rates`);
+        console.log(`Created ${this.rates.length} rates`);
     }
 
     private async seedAttachments(): Promise<void> {
-        console.log("📎 Seeding attachments...");
+        console.log("Seeding attachments...");
 
         const attachmentData: AttachmentSeedData[] = [];
 
@@ -499,15 +500,15 @@ export class DatabaseSeeder {
         }
 
         this.attachments = await Attachment.bulkCreate(attachmentData);
-        console.log(`✅ Created ${this.attachments.length} attachments`);
+        console.log(`Created ${this.attachments.length} attachments`);
     }
 
     private async seedQuotations(): Promise<void> {
-        console.log("📋 Seeding quotations...");
+        console.log("Seeding quotations...");
 
         const quotationData: QuotationSeedData[] = [];
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 150; i++) {
             const product = faker.helpers.arrayElement(this.products);
             const productRates = this.rates.filter(
                 (rate) => rate.productId === product.id && !rate.isExtra,
@@ -521,29 +522,29 @@ export class DatabaseSeeder {
                     rateId: rate.id,
                     quantity: faker.number.int({
                         min: 1,
-                        max: Math.min(product.quantity, 10),
+                        max: Math.min(product.quantity, 5),
                     }),
                 });
             }
         }
 
         this.quotations = await Quotation.bulkCreate(quotationData);
-        console.log(`✅ Created ${this.quotations.length} quotations`);
+        console.log(`Created ${this.quotations.length} quotations`);
     }
 
     private async seedOrders(): Promise<void> {
-        console.log("🛒 Seeding orders...");
+        console.log("Seeding orders...");
 
         const orderData: OrderSeedData[] = [];
 
-        // Create orders for some quotations
         const quotationsForOrders = faker.helpers.arrayElements(
             this.quotations,
-            faker.number.int({ min: 30, max: 60 }),
+            faker.number.int({ min: 50, max: 100 }),
         );
 
-        for (let i = 0; i < quotationsForOrders.length; i++) {
+        for (const quotation of quotationsForOrders) {
             orderData.push({
+                quotationId: quotation.id,
                 deliveryAddress: faker.location.streetAddress({
                     useFullAddress: true,
                 }),
@@ -558,15 +559,14 @@ export class DatabaseSeeder {
         }
 
         this.orders = await Order.bulkCreate(orderData);
-        console.log(`✅ Created ${this.orders.length} orders`);
+        console.log(`Created ${this.orders.length} orders`);
     }
 
     private async seedContracts(): Promise<void> {
-        console.log("📄 Seeding contracts...");
+        console.log("Seeding contracts...");
 
         const contractData: ContractSeedData[] = [];
 
-        // Create contracts for confirmed orders
         const confirmedOrders = this.orders.filter(
             (order) =>
                 order.status === "confirmed" &&
@@ -585,57 +585,57 @@ export class DatabaseSeeder {
         }
 
         this.contracts = await Contract.bulkCreate(contractData);
-        console.log(`✅ Created ${this.contracts.length} contracts`);
+        console.log(`Created ${this.contracts.length} contracts`);
     }
 
     private async seedReservations(): Promise<void> {
-        console.log("🔒 Seeding reservations...");
+        console.log("Seeding reservations...");
 
         const reservationData: ReservationSeedData[] = [];
 
-        // Create reservations for orders and some additional ones
         for (const order of this.orders) {
-            // Get a random quotation for this reservation (simulating the relationship)
-            const quotation = faker.helpers.arrayElement(this.quotations);
+            const quotation = this.quotations.find(
+                (q) => q.id === order.quotationId,
+            );
 
-            reservationData.push({
-                orderId: order.id,
-                productId: quotation.productId,
-                isValid: faker.datatype.boolean({ probability: 0.9 }),
-            });
+            if (quotation) {
+                reservationData.push({
+                    orderId: order.id,
+                    productId: quotation.productId,
+                    isValid: order.status !== "cancelled",
+                });
+            } else {
+                console.warn(
+                    `Quotation not found for order ${order.id}. Skipping reservation.`,
+                );
+            }
         }
 
-        // Add some standalone reservations
-        for (let i = 0; i < 20; i++) {
-            const product = faker.helpers.arrayElement(this.products);
+        // FIX: Removed the loop that created standalone reservations.
+        // All reservations are now created based on existing orders.
 
-            reservationData.push({
-                orderId: null, // Some reservations might not have orders yet
-                productId: product.id,
-                isValid: faker.datatype.boolean({ probability: 0.85 }),
-            });
+        if (reservationData.length > 0) {
+            this.reservations = await Reservation.bulkCreate(reservationData);
+            console.log(`Created ${this.reservations.length} reservations`);
+        } else {
+            console.log("No reservations to create.");
         }
-
-        this.reservations = await Reservation.bulkCreate(reservationData);
-        console.log(`✅ Created ${this.reservations.length} reservations`);
     }
 }
 
-// Export the seeder function
 export async function runSeeder(): Promise<void> {
     const seeder = new DatabaseSeeder();
     await seeder.seed();
 }
 
-// Allow running this file directly
-if (require.main === module) {
-    runSeeder()
-        .then(() => {
-            console.log("🎉 Seeding completed successfully!");
-            process.exit(0);
-        })
-        .catch((error) => {
-            console.error("💥 Seeding failed:", error);
-            process.exit(1);
-        });
-}
+// if (require.main === module) {
+//     runSeeder()
+//         .then(() => {
+//             console.log("Seeding script finished successfully!");
+//             process.exit(0);
+//         })
+//         .catch((error) => {
+//             console.error("Seeding script failed:", error);
+//             process.exit(1);
+//         });
+// }
