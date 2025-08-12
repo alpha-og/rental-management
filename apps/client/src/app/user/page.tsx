@@ -10,14 +10,15 @@ import productsData from "./dummy.json";
 
 interface FilterState {
     priceRange: [number, number];
+    categories: string[];
     rating: number;
 }
 
 const ITEMS_PER_PAGE = 9;
 const DEFAULT_FILTERS: FilterState = {
     priceRange: [0, 1000],
-    rating: 0,
     categories: [],
+    rating: 0,
 };
 
 export default function UserPage() {
@@ -35,6 +36,8 @@ export default function UserPage() {
                 product.price >= filters.priceRange[0] &&
                 product.price <= filters.priceRange[1];
             const matchesRating = product.rating >= filters.rating;
+            // Note: Category filtering is disabled since Product interface doesn't have category field
+            // const matchesCategory = filters.categories.length === 0 || filters.categories.includes(product.category);
             return matchesPrice && matchesRating;
         });
     }, [products, filters]);
@@ -47,6 +50,7 @@ export default function UserPage() {
     );
 
     const hasActiveFilters =
+        filters.categories.length > 0 ||
         filters.rating > 0 ||
         filters.priceRange[0] > 0 ||
         filters.priceRange[1] < 1000;
@@ -56,6 +60,13 @@ export default function UserPage() {
     }, [filters]);
 
     const clearFilters = () => setFilters(DEFAULT_FILTERS);
+
+    const removeCategory = (category: string) => {
+        setFilters((prev) => ({
+            ...prev,
+            categories: prev.categories.filter((c) => c !== category),
+        }));
+    };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -129,6 +140,17 @@ export default function UserPage() {
                                 </button>
                             </div>
                             <div className="flex flex-wrap gap-2">
+                                {filters.categories.map((category) => (
+                                    <FilterTag
+                                        key={category}
+                                        onRemove={() =>
+                                            removeCategory(category)
+                                        }
+                                        className="bg-blue-100 text-blue-800"
+                                    >
+                                        {category}
+                                    </FilterTag>
+                                ))}
                                 {filters.rating > 0 && (
                                     <FilterTag
                                         onRemove={() =>
