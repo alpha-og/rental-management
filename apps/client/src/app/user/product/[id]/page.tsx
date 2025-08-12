@@ -1,11 +1,12 @@
 import ProductDetailsPage from "@client/components/user/product_details/page";
 
 interface ProductPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-    return <ProductDetailsPage params={params} />;
+export default async function ProductPage({ params }: ProductPageProps) {
+    const resolvedParams = await params;
+    return <ProductDetailsPage params={resolvedParams} />;
 }
