@@ -1,7 +1,50 @@
 import axios from "../../../lib/axios";
 
-// Types for product data
+/**
+ * Products API Module
+ *
+ * This module provides functions to interact with the products endpoints:
+ * - GET /api/v1/products - Get all products
+ * - GET /api/v1/products/{id} - Get a product by id
+ * - POST /api/v1/products - Create a new product
+ * - PUT /api/v1/products/{id} - Update a product
+ * - DELETE /api/v1/products/{id} - Delete a product
+ *
+ * Base URL: http://35.222.216.48:4001
+ */
+
+// Types for product data - Updated to match backend API
 export interface ProductData {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    quantity: number;
+    category?: string;
+    termsAndConditions?: string;
+    imageUrl?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+// Create DTO for backend API
+export interface CreateProductRequest {
+    name: string;
+    price: number;
+    description?: string;
+    quantity: number;
+}
+
+// Update DTO for backend API
+export interface UpdateProductRequest {
+    name?: string;
+    price?: number;
+    description?: string;
+    quantity?: number;
+}
+
+// Legacy interface for backward compatibility
+export interface LegacyProductData {
     id: string;
     name: string;
     description: string;
@@ -16,6 +59,57 @@ export interface ProductData {
         priceList: number;
     };
 }
+
+// Helper functions to convert between formats
+export const convertToLegacyFormat = (
+    product: ProductData,
+): LegacyProductData => ({
+    id: product.id,
+    name: product.name,
+    description: product.description || "",
+    category: product.category || "General",
+    unitPrice: product.price,
+    rentalPeriod: "daily",
+    availability: product.quantity > 0 ? "available" : "rented",
+    stockQuantity: product.quantity,
+    rentalPricing: {
+        extraHour: 0,
+        extraDay: 0,
+        priceList: product.price,
+    },
+});
+
+export const convertFromLegacyFormat = (
+    legacy: LegacyProductData,
+): ProductData => ({
+    id: legacy.id,
+    name: legacy.name,
+    description: legacy.description,
+    price: legacy.unitPrice,
+    quantity: legacy.stockQuantity,
+    category: legacy.category,
+    imageUrl: "",
+});
+
+export const convertLegacyCreateRequest = (
+    legacy: Partial<LegacyProductData>,
+): CreateProductRequest => ({
+    name: legacy.name || "New Product",
+    price: legacy.unitPrice || 0,
+    description: legacy.description || "",
+    quantity: legacy.stockQuantity || 1,
+});
+
+export const convertLegacyUpdateRequest = (
+    legacy: Partial<LegacyProductData>,
+): UpdateProductRequest => ({
+    ...(legacy.name && { name: legacy.name }),
+    ...(legacy.unitPrice !== undefined && { price: legacy.unitPrice }),
+    ...(legacy.description && { description: legacy.description }),
+    ...(legacy.stockQuantity !== undefined && {
+        quantity: legacy.stockQuantity,
+    }),
+});
 
 export interface TransferData {
     id: string;
@@ -70,67 +164,43 @@ export interface AttachmentData {
     updatedAt?: string;
 }
 
-// Fallback/dummy data
+// Fallback/dummy data - Updated to match backend API
 const FALLBACK_PRODUCTS: ProductData[] = [
     {
         id: "P001",
         name: "Excavator 20T",
         description: "Heavy duty excavator for construction projects",
         category: "Heavy Machinery",
-        unitPrice: 500,
-        rentalPeriod: "daily",
-        availability: "available",
-        stockQuantity: 3,
-        rentalPricing: {
-            extraHour: 50,
-            extraDay: 450,
-            priceList: 500,
-        },
+        price: 500,
+        quantity: 3,
+        imageUrl: "",
     },
     {
         id: "P002",
         name: "Concrete Mixer",
         description: "Industrial concrete mixer for large projects",
         category: "Construction Equipment",
-        unitPrice: 150,
-        rentalPeriod: "daily",
-        availability: "rented",
-        stockQuantity: 5,
-        rentalPricing: {
-            extraHour: 20,
-            extraDay: 130,
-            priceList: 150,
-        },
+        price: 150,
+        quantity: 5,
+        imageUrl: "",
     },
     {
         id: "P003",
         name: "Tower Crane",
         description: "High-capacity tower crane for building construction",
         category: "Lifting Equipment",
-        unitPrice: 800,
-        rentalPeriod: "weekly",
-        availability: "available",
-        stockQuantity: 2,
-        rentalPricing: {
-            extraHour: 100,
-            extraDay: 750,
-            priceList: 800,
-        },
+        price: 800,
+        quantity: 2,
+        imageUrl: "",
     },
     {
         id: "P004",
         name: "Forklift 5T",
         description: "Electric forklift for warehouse operations",
         category: "Material Handling",
-        unitPrice: 200,
-        rentalPeriod: "daily",
-        availability: "maintenance",
-        stockQuantity: 4,
-        rentalPricing: {
-            extraHour: 25,
-            extraDay: 180,
-            priceList: 200,
-        },
+        price: 200,
+        quantity: 4,
+        imageUrl: "",
     },
 ];
 
@@ -189,7 +259,7 @@ const FALLBACK_RETURNS: ReturnData[] = [
 // API functions
 export const getProducts = async (): Promise<ProductData[]> => {
     try {
-        const response = await axios.get("/products");
+        const response = await axios.get("/api/v1/products");
         return response.data as ProductData[];
     } catch (error) {
         console.warn(
@@ -204,7 +274,7 @@ export const getProductById = async (
     productId: string,
 ): Promise<ProductData> => {
     try {
-        const response = await axios.get(`/products/${productId}`);
+        const response = await axios.get(`/api/v1/products/${productId}`);
         return response.data as ProductData;
     } catch (error) {
         console.warn(
@@ -219,12 +289,37 @@ export const getProductById = async (
 };
 
 export const createProduct = async (
-    productData: Partial<ProductData>,
+    productData: CreateProductRequest,
 ): Promise<ProductData> => {
     try {
-        const response = await axios.post("/products", productData);
+        // Validate required fields on client side
+        if (!productData.name || productData.name.trim() === "") {
+            throw new Error("Product name is required");
+        }
+        if (!productData.price || productData.price <= 0) {
+            throw new Error("Product price must be greater than 0");
+        }
+        if (!productData.quantity || productData.quantity <= 0) {
+            throw new Error("Product quantity must be greater than 0");
+        }
+
+        // Ensure numeric fields are properly typed
+        const cleanedData = {
+            name: productData.name.trim(),
+            price: Number(productData.price),
+            description: productData.description?.trim() || "",
+            quantity: Number(productData.quantity),
+        };
+
+        console.log("Sending product data:", cleanedData);
+
+        const response = await axios.post("/api/v1/products", cleanedData);
         return response.data as ProductData;
     } catch (error) {
+        console.error("Error creating product:", error);
+        if (error instanceof Error && error.message.includes("required")) {
+            throw error; // Re-throw validation errors
+        }
         console.warn(
             "Backend endpoint not available for creating product, using fallback behavior:",
             error,
@@ -233,28 +328,64 @@ export const createProduct = async (
             id: `P${String(Date.now()).slice(-3)}`,
             name: productData.name || "New Product",
             description: productData.description || "",
-            category: productData.category || "General",
-            unitPrice: productData.unitPrice || 0,
-            rentalPeriod: productData.rentalPeriod || "daily",
-            availability: "available",
-            stockQuantity: productData.stockQuantity || 1,
-            rentalPricing: {
-                extraHour: 0,
-                extraDay: 0,
-                priceList: productData.unitPrice || 0,
-            },
+            price: productData.price || 0,
+            quantity: productData.quantity || 1,
+            category: "General",
+            imageUrl: "",
         };
     }
 };
 
 export const updateProduct = async (
     productId: string,
-    productData: Partial<ProductData>,
+    productData: UpdateProductRequest,
 ): Promise<ProductData> => {
     try {
-        const response = await axios.put(`/products/${productId}`, productData);
+        // Validate fields if they are provided
+        if (
+            productData.name !== undefined &&
+            (!productData.name || productData.name.trim() === "")
+        ) {
+            throw new Error("Product name cannot be empty");
+        }
+        if (productData.price !== undefined && productData.price <= 0) {
+            throw new Error("Product price must be greater than 0");
+        }
+        if (productData.quantity !== undefined && productData.quantity <= 0) {
+            throw new Error("Product quantity must be greater than 0");
+        }
+
+        // Clean the data
+        const cleanedData: UpdateProductRequest = {};
+        if (productData.name !== undefined) {
+            cleanedData.name = productData.name.trim();
+        }
+        if (productData.price !== undefined) {
+            cleanedData.price = Number(productData.price);
+        }
+        if (productData.description !== undefined) {
+            cleanedData.description = productData.description?.trim() || "";
+        }
+        if (productData.quantity !== undefined) {
+            cleanedData.quantity = Number(productData.quantity);
+        }
+
+        console.log("Updating product with data:", cleanedData);
+
+        const response = await axios.put(
+            `/api/v1/products/${productId}`,
+            cleanedData,
+        );
         return response.data as ProductData;
     } catch (error) {
+        console.error("Error updating product:", error);
+        if (
+            error instanceof Error &&
+            (error.message.includes("empty") ||
+                error.message.includes("greater than"))
+        ) {
+            throw error; // Re-throw validation errors
+        }
         console.warn(
             `Backend endpoint not available for updating product ${productId}, using fallback behavior:`,
             error,
@@ -271,13 +402,43 @@ export const updateProduct = async (
 
 export const deleteProduct = async (productId: string): Promise<void> => {
     try {
-        await axios.delete(`/products/${productId}`);
+        await axios.delete(`/api/v1/products/${productId}`);
     } catch (error) {
         console.warn(
             `Backend endpoint not available for deleting product ${productId}, using fallback behavior:`,
             error,
         );
     }
+};
+
+// Legacy-compatible wrapper functions for backward compatibility
+export const getProductsLegacy = async (): Promise<LegacyProductData[]> => {
+    const products = await getProducts();
+    return products.map(convertToLegacyFormat);
+};
+
+export const getProductByIdLegacy = async (
+    productId: string,
+): Promise<LegacyProductData> => {
+    const product = await getProductById(productId);
+    return convertToLegacyFormat(product);
+};
+
+export const createProductLegacy = async (
+    productData: Partial<LegacyProductData>,
+): Promise<LegacyProductData> => {
+    const createRequest = convertLegacyCreateRequest(productData);
+    const product = await createProduct(createRequest);
+    return convertToLegacyFormat(product);
+};
+
+export const updateProductLegacy = async (
+    productId: string,
+    productData: Partial<LegacyProductData>,
+): Promise<LegacyProductData> => {
+    const updateRequest = convertLegacyUpdateRequest(productData);
+    const product = await updateProduct(productId, updateRequest);
+    return convertToLegacyFormat(product);
 };
 
 export const getTransfers = async (): Promise<TransferData[]> => {
